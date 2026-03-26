@@ -1,8 +1,15 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#020617" media="(prefers-color-scheme: dark)">
     <title>Excel Lens | 极简数据透视</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -45,26 +52,31 @@
         }
     </script>
 </head>
-<body class="bg-background text-foreground antialiased overflow-hidden transition-colors duration-300">
-    
+
+<body class="app-body bg-background text-foreground antialiased overflow-hidden transition-colors duration-300">
+
     <!-- App Layout -->
-    <div class="flex h-screen w-full">
-        
+    <div class="app-shell flex h-screen w-full">
+
         <!-- Sidebar: Sheet Navigation -->
-        <aside class="fixed inset-y-0 left-0 z-40 w-64 -translate-x-full bg-background border-r border-border transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto lg:z-auto flex flex-col" id="sidebar">
+        <aside
+            class="fixed inset-y-0 left-0 z-40 w-64 -translate-x-full bg-background border-r border-border transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto lg:z-auto flex flex-col"
+            id="sidebar">
             <div class="p-4 flex items-center justify-between">
                 <div class="flex items-center gap-2 font-semibold tracking-tight">
                     <i data-lucide="table" class="w-5 h-5 text-primary"></i>
                     <span class="text-sm">Excel Lens</span>
                 </div>
-                <button id="theme-toggle" class="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-accent-foreground transition-colors">
+                <button id="theme-toggle"
+                    class="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-accent-foreground transition-colors">
                     <i data-lucide="sun" class="w-4 h-4 dark:hidden"></i>
                     <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
                 </button>
             </div>
 
             <div class="px-3 pb-3">
-                <label for="file-upload" class="flex items-center justify-center w-full h-10 px-3 transition bg-primary text-primary-foreground rounded-lg shadow-sm cursor-pointer hover:opacity-90 focus:outline-none active:scale-95 text-sm">
+                <label for="file-upload"
+                    class="flex items-center justify-center w-full h-10 px-3 transition bg-primary text-primary-foreground rounded-lg shadow-sm cursor-pointer hover:opacity-90 focus:outline-none active:scale-95 text-sm">
                     <i data-lucide="upload" class="w-4 h-4 mr-1.5"></i>
                     <span class="font-medium">导入 Excel</span>
                     <input id="file-upload" type="file" class="hidden" accept=".xlsx, .xls, .csv" />
@@ -82,7 +94,8 @@
             <div class="px-3 py-2 border-t border-border">
                 <div class="flex items-center justify-between">
                     <div class="text-xs font-medium text-muted-foreground">对比项</div>
-                    <span id="compare-count" class="text-xs bg-primary text-primary-foreground rounded-full px-2 py-0.5">0</span>
+                    <span id="compare-count"
+                        class="text-xs bg-primary text-primary-foreground rounded-full px-2 py-0.5">0</span>
                 </div>
                 <div id="compare-items-container" class="space-y-1 max-h-48 overflow-y-auto mt-1">
                     <div id="compare-items-placeholder" class="text-xs text-muted-foreground text-center py-4">
@@ -104,53 +117,61 @@
         <div id="sidebar-backdrop" class="fixed inset-0 z-30 bg-black/50 hidden lg:hidden"></div>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col h-full relative overflow-hidden">
-            
+        <main class="app-main flex-1 flex flex-col h-full relative overflow-hidden">
+
             <!-- Top Toolbar -->
-            <header class="h-auto border-b border-border bg-background/80 backdrop-blur-sm z-20 p-3 lg:flex lg:items-center lg:justify-between lg:px-6 lg:py-2">
+            <header
+                class="top-toolbar h-auto border-b border-border bg-background/80 backdrop-blur-sm z-20 p-3 lg:flex lg:items-center lg:justify-between lg:px-6 lg:py-2"
+                >
                 <div class="flex flex-col w-full lg:flex-row lg:items-center lg:gap-4">
                     <!-- Row 1: Menu, Title, Actions -->
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <button id="menu-toggle" class="p-2 -ml-2 rounded-md hover:bg-accent lg:hidden">
-                                <i data-lucide="menu" class="w-5 h-5"></i>
-                            </button>
+                            <button id="menu-toggle" class="p-2 -ml-2 rounded-md hover:bg-accent active:bg-accent/80 touch-manipulation lg:hidden" aria-label="打开菜单">
+                            <i data-lucide="menu" class="w-5 h-5"></i>
+                        </button>
                             <h1 class="text-base font-semibold tracking-tight lg:hidden">Excel Lens</h1>
                         </div>
 
-                        <!-- Mobile Actions Menu -->
-                        <div class="relative lg:hidden">
-                            <button id="actions-menu-toggle" class="p-2 -mr-2 rounded-md hover:bg-accent">
+                        <!-- Mobile Actions Drawer Trigger -->
+                        <div class="lg:hidden">
+                            <button id="actions-menu-toggle"
+                                class="p-2 -mr-2 rounded-md hover:bg-accent active:bg-accent/80 touch-manipulation"
+                                aria-label="更多操作">
                                 <i data-lucide="more-vertical" class="w-5 h-5"></i>
                             </button>
-                            <div id="actions-menu" class="absolute right-0 mt-2 w-48 bg-background border border-border rounded-md shadow-lg z-10 hidden">
-                                <!-- Mobile actions will be populated here by JS -->
-                            </div>
                         </div>
                     </div>
 
                     <!-- Row 2: Search Bar -->
-                    <div class="relative mt-3 w-full lg:mt-0 lg:flex-1 flex items-center gap-2">
-                        <i data-lucide="search" class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors"></i>
-                                                <input type="text" id="search-input" placeholder="搜索当前表..." class="h-9 w-full rounded-md border border-input bg-transparent px-9 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
-                        <button id="search-mode-btn" class="shrink-0 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-3 py-2">
+                    <div class="search-shell relative mt-3 w-full lg:mt-0 lg:flex-1 flex items-center gap-2">
+                        <i data-lucide="search"
+                            class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors"></i>
+                        <input type="text" id="search-input" placeholder="搜索当前表..."
+                            class="h-9 w-full rounded-md border border-input bg-transparent px-9 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
+                        <button id="search-mode-btn"
+                            class="shrink-0 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-3 py-2">
                             <!-- Icon and text will be set by JS -->
                         </button>
                     </div>
 
                     <!-- Desktop Actions & Controls -->
                     <div class="hidden lg:flex items-center gap-4">
-                        <button id="select-all-btn" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-3 py-2">
+                        <button id="select-all-btn"
+                            class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-3 py-2">
                             <i data-lucide="check-square" class="w-4 h-4 mr-1"></i>全选
                         </button>
-                        <button id="clear-selection-btn" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-3 py-2">
+                        <button id="clear-selection-btn"
+                            class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-3 py-2">
                             <i data-lucide="square" class="w-4 h-4 mr-1"></i>清空
                         </button>
-                        <button id="compare-toggle" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-3 py-2">
+                        <button id="compare-toggle"
+                            class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-3 py-2">
                             <i data-lucide="bar-chart-3" class="w-4 h-4 mr-1"></i>对比
                         </button>
                         <div class="h-6 w-px bg-border mx-2"></div>
-                                                <button id="export-json" class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
+                        <button id="export-json"
+                            class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2">
                             <i data-lucide="download" class="w-4 h-4 mr-2"></i>JSON
                         </button>
 
@@ -170,11 +191,13 @@
                             <i data-lucide="snowflake" class="w-4 h-4"></i>
                             <div class="flex items-center gap-1">
                                 <label class="text-xs">行</label>
-                                <input type="number" id="freeze-row" min="0" max="10" value="1" class="w-12 h-7 rounded-md border border-input bg-transparent text-center text-xs focus:ring-1 focus:ring-ring">
+                                <input type="number" id="freeze-row" min="0" max="10" value="1"
+                                    class="w-12 h-7 rounded-md border border-input bg-transparent text-center text-xs focus:ring-1 focus:ring-ring">
                             </div>
                             <div class="flex items-center gap-1">
                                 <label class="text-xs">列</label>
-                                <input type="number" id="freeze-col" min="0" max="5" value="0" class="w-12 h-7 rounded-md border border-input bg-transparent text-center text-xs focus:ring-1 focus:ring-ring">
+                                <input type="number" id="freeze-col" min="0" max="5" value="0"
+                                    class="w-12 h-7 rounded-md border border-input bg-transparent text-center text-xs focus:ring-1 focus:ring-ring">
                             </div>
                         </div>
                     </div>
@@ -182,16 +205,17 @@
             </header>
 
             <!-- Data Viewport -->
-            <div class="flex-1 relative overflow-auto bg-muted/10 scroll-smooth" id="table-container">
+            <div class="data-viewport flex-1 relative overflow-auto bg-muted/10 scroll-smooth" id="table-container">
                 <!-- Empty State / Drop Zone -->
-                <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground pointer-events-none">
+                <div id="empty-state"
+                    class="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground pointer-events-none">
                     <div class="w-24 h-24 bg-muted/20 rounded-full flex items-center justify-center mb-4 animate-pulse">
                         <i data-lucide="file-spreadsheet" class="w-10 h-10 opacity-50"></i>
                     </div>
                     <h3 class="text-lg font-medium text-foreground">准备就绪</h3>
                     <p class="text-sm mt-1 opacity-70">点击左侧上传或直接拖拽 Excel 文件至此</p>
                 </div>
-                
+
                 <!-- Table injected here -->
                 <table id="data-table" class="w-full text-sm text-left border-collapse hidden">
                     <thead class="text-xs text-muted-foreground uppercase bg-secondary/50"></thead>
@@ -200,16 +224,18 @@
             </div>
 
             <!-- Pagination Footer -->
-            <footer class="h-12 border-t border-border bg-background flex items-center justify-between px-6 z-20">
+            <footer class="app-footer h-12 border-t border-border bg-background flex items-center justify-between px-6 z-20">
                 <div class="text-xs text-muted-foreground hidden sm:block" id="pagination-info">
                     显示 0 - 0 条，共 0 条
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="prev-page" class="p-1 rounded-md hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                    <button id="prev-page"
+                        class="p-1 rounded-md hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                         <i data-lucide="chevron-left" class="w-4 h-4"></i>
                     </button>
                     <span class="text-xs font-medium min-w-[3rem] text-center" id="page-indicator">1 / 1</span>
-                    <button id="next-page" class="p-1 rounded-md hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                    <button id="next-page"
+                        class="p-1 rounded-md hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                         <i data-lucide="chevron-right" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -220,16 +246,24 @@
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
+    <div id="actions-drawer-backdrop" class="fixed inset-0 z-40 bg-black/45 backdrop-blur-sm hidden lg:hidden"></div>
+    <div id="actions-menu"
+        class="fixed inset-y-0 right-0 z-50 hidden w-[min(22rem,92vw)] translate-x-full border-l border-border bg-background shadow-2xl lg:hidden">
+        <!-- Mobile actions will be populated here by JS -->
+    </div>
+
     <!-- 数据对比面板 -->
-    <div id="compare-dialog" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-background rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+    <div id="compare-dialog"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="compare-panel bg-background rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
             <header class="p-4 border-b border-border flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <h2 class="text-lg font-semibold">数据对比</h2>
                     <!-- 显示模式切换 -->
                     <div class="flex items-center gap-2">
                         <span class="text-xs text-muted-foreground">显示模式:</span>
-                        <button id="compare-mode-toggle" class="px-3 py-1 rounded-md border border-input text-xs transition-colors">
+                        <button id="compare-mode-toggle"
+                            class="px-3 py-1 rounded-md border border-input text-xs transition-colors">
                             <span id="compare-mode-text">平均值</span>
                         </button>
                     </div>
@@ -243,4 +277,5 @@
     </div>
     <script type="module" src="main.js"></script>
 </body>
+
 </html>

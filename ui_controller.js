@@ -21,10 +21,25 @@ const elements = {
     compareCount: document.getElementById('compare-count')
 };
 
+const closeMobileSidebar = () => {
+    if (window.innerWidth >= 1024) return;
+
+    const sidebar = document.getElementById('sidebar');
+    const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+
+    if (sidebar && sidebarBackdrop) {
+        sidebar.classList.add('-translate-x-full');
+        sidebarBackdrop.classList.add('hidden');
+    }
+};
+
 export const initUI = () => {
     const menuToggle = document.getElementById('menu-toggle');
     const sidebar = document.getElementById('sidebar');
     const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+    const actionsMenuToggle = document.getElementById('actions-menu-toggle');
+    const actionsMenu = document.getElementById('actions-menu');
+    const actionsDrawerBackdrop = document.getElementById('actions-drawer-backdrop');
 
     const toggleSidebar = () => {
         sidebar.classList.toggle('-translate-x-full');
@@ -39,9 +54,66 @@ export const initUI = () => {
         sidebarBackdrop.addEventListener('click', toggleSidebar);
     }
 
-    // Mobile actions menu logic
-    const actionsMenuToggle = document.getElementById('actions-menu-toggle');
-    const actionsMenu = document.getElementById('actions-menu');
+    // 移动端侧边栏滑动手势支持
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const minSwipeDistance = 50;
+
+    // 从左侧边缘滑动打开侧边栏
+    document.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, { passive: true });
+
+    const handleSwipe = () => {
+        const swipeDistance = touchEndX - touchStartX;
+        const sidebar = document.getElementById('sidebar');
+        const isSidebarOpen = !sidebar.classList.contains('-translate-x-full');
+
+        // 从左侧边缘向右滑动打开侧边栏（只在侧边栏关闭时）
+        if (swipeDistance > minSwipeDistance && touchStartX < 30 && !isSidebarOpen) {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarBackdrop.classList.remove('hidden');
+        }
+
+        // 从侧边栏内向左滑动关闭侧边栏
+        if (swipeDistance < -minSwipeDistance && isSidebarOpen) {
+            sidebar.classList.add('-translate-x-full');
+            sidebarBackdrop.classList.add('hidden');
+        }
+    };
+
+    const openActionsDrawer = () => {
+        if (!actionsMenu || !actionsDrawerBackdrop) return;
+
+        actionsDrawerBackdrop.classList.remove('hidden');
+        actionsMenu.classList.remove('hidden');
+
+        requestAnimationFrame(() => {
+            actionsDrawerBackdrop.classList.add('is-open');
+            actionsMenu.classList.add('is-open');
+        });
+    };
+
+    const closeActionsDrawer = () => {
+        if (!actionsMenu || !actionsDrawerBackdrop || actionsMenu.classList.contains('hidden')) return;
+
+        actionsDrawerBackdrop.classList.remove('is-open');
+        actionsMenu.classList.remove('is-open');
+
+        window.setTimeout(() => {
+            if (!actionsMenu.classList.contains('is-open')) {
+                actionsDrawerBackdrop.classList.add('hidden');
+                actionsMenu.classList.add('hidden');
+            }
+        }, 280);
+    };
+
+    // Mobile actions drawer logic
 
     if (actionsMenuToggle && actionsMenu) {
         const actions = [
@@ -51,16 +123,20 @@ export const initUI = () => {
             { id: 'export-json', icon: 'download', label: '导出JSON' }
         ];
 
-        let actionsHTML = actions.map(action => `
-            <button data-action-id="${action.id}" class="w-full text-left px-4 py-2 text-sm text-foreground hover:bg-accent flex items-center gap-2 first:rounded-t-md last:rounded-b-md">
-                <i data-lucide="${action.icon}" class="w-4 h-4 text-muted-foreground"></i>
-                <span>${action.label}</span>
-            </button>
-        `).join('');
+        let actionsHTML = `
+            <div class="quick-actions-grid">
+                ${actions.map(action => `
+                    <button data-action-id="${action.id}" class="quick-action-tile text-sm text-foreground">
+                        <i data-lucide="${action.icon}" class="w-4 h-4 text-muted-foreground"></i>
+                        <span>${action.label}</span>
+                    </button>
+                `).join('')}
+            </div>
+        `;
 
         // Add Display Mode controls to mobile dropdown
         actionsHTML += `
-            <div class="px-3 py-2 border-t border-border text-sm">
+            <div class="mt-3 rounded-2xl border border-border bg-background/60 px-3 py-3 text-sm">
                 <div class="flex items-center justify-between">
                     <label class="text-muted-foreground">显示模式</label>
                     <div class="flex rounded-md overflow-hidden border border-input text-xs">
@@ -74,23 +150,43 @@ export const initUI = () => {
         // Add freeze controls to mobile dropdown
         actionsHTML += `
 
-            <div class="px-3 py-2 border-t border-border space-y-2 text-sm">
+            <div class="mt-3 rounded-2xl border border-border bg-background/60 px-3 py-3 space-y-2 text-sm">
                 <div class="flex items-center justify-between">
                     <label for="freeze-row-mobile" class="text-muted-foreground flex items-center gap-1"><i data-lucide="snowflake" class="w-4 h-4"></i>冻结行</label>
-                    <input type="number" id="freeze-row-mobile" min="0" max="10" class="w-16 h-7 rounded-md border border-input bg-transparent text-center text-xs focus:ring-1 focus:ring-ring">
+                    <input type="number" id="freeze-row-mobile" min="0" max="10" class="w-16 h-8 rounded-md border border-input bg-transparent text-center text-xs focus:ring-1 focus:ring-ring">
                 </div>
                 <div class="flex items-center justify-between">
                     <label for="freeze-col-mobile" class="text-muted-foreground flex items-center gap-1"><i data-lucide="snowflake" class="w-4 h-4"></i>冻结列</label>
-                    <input type="number" id="freeze-col-mobile" min="0" max="5" class="w-16 h-7 rounded-md border border-input bg-transparent text-center text-xs focus:ring-1 focus:ring-ring">
+                    <input type="number" id="freeze-col-mobile" min="0" max="5" class="w-16 h-8 rounded-md border border-input bg-transparent text-center text-xs focus:ring-1 focus:ring-ring">
                 </div>
             </div>
         `;
 
-        actionsMenu.innerHTML = actionsHTML;
+        actionsMenu.innerHTML = `
+            <div class="flex h-full flex-col">
+                <div class="flex items-center justify-between border-b border-border px-4 py-4">
+                    <div>
+                        <div class="text-sm font-semibold text-foreground">快捷操作</div>
+                        <div class="mt-1 text-xs text-muted-foreground">常用动作、显示模式和冻结设置</div>
+                    </div>
+                    <button id="actions-drawer-close" class="inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-accent" aria-label="关闭快捷操作">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto px-3 py-3">
+                    ${actionsHTML}
+                </div>
+            </div>
+        `;
 
         actionsMenu.addEventListener('click', (e) => {
             const button = e.target.closest('button');
             if (!button) return;
+
+            if (button.id === 'actions-drawer-close') {
+                closeActionsDrawer();
+                return;
+            }
 
             // Handle main actions with data-action-id
             if (button.dataset.actionId) {
@@ -98,7 +194,7 @@ export const initUI = () => {
                 if (originalButton) {
                     originalButton.click();
                 }
-                actionsMenu.classList.add('hidden'); // Close menu after main action
+                closeActionsDrawer();
                 return;
             }
 
@@ -106,22 +202,32 @@ export const initUI = () => {
             if (e.target.id === 'mode-average-mobile') {
                 setState({ config: { ...getState().config, displayMode: 'average' } });
                 renderTable();
+                closeActionsDrawer();
             }
             if (e.target.id === 'mode-all-mobile') {
                 setState({ config: { ...getState().config, displayMode: 'all' } });
                 renderTable();
+                closeActionsDrawer();
             }
         });
 
         actionsMenuToggle.addEventListener('click', (e) => {
             e.stopPropagation();
-            actionsMenu.classList.toggle('hidden');
+            if (actionsMenu.classList.contains('hidden')) {
+                openActionsDrawer();
+            } else {
+                closeActionsDrawer();
+            }
         });
 
-        // Close dropdown when clicking outside
+        if (actionsDrawerBackdrop) {
+            actionsDrawerBackdrop.addEventListener('click', closeActionsDrawer);
+        }
+
+        // Close drawer when clicking outside
         window.addEventListener('click', (e) => {
             if (!actionsMenu.classList.contains('hidden') && !actionsMenu.contains(e.target) && !actionsMenuToggle.contains(e.target)) {
-                actionsMenu.classList.add('hidden');
+                closeActionsDrawer();
             }
         });
     }
@@ -377,7 +483,10 @@ const renderSidebar = (sheets, active) => {
                 ${compareCount > 0 ? `<span class="bg-primary text-primary-foreground text-xs rounded-full px-2 py-0.5">${compareCount}</span>` : ''}
             </div>
         `;
-        div.onclick = () => setState({ activeSheetName: sheet });
+        div.onclick = () => {
+            setState({ activeSheetName: sheet });
+            closeMobileSidebar();
+        };
         elements.sheetList.appendChild(div);
     });
     lucide.createIcons();
@@ -431,7 +540,6 @@ const renderTable = () => {
     headerRow.forEach((key, idx) => {
         const th = document.createElement('th');
         th.className = `px-4 py-3 font-medium border-b border-border text-xs whitespace-nowrap ${idx < freezeCol ? 'sticky-col' : ''} ${idx < freezeCol ? 'z-30' : ''}`;
-        if (idx < freezeCol) th.style.left = `${idx * 100}px`;
         // 添加sticky-header类以确保表头不透明
         th.classList.add('sticky-header');
         th.textContent = key || '';
@@ -475,7 +583,6 @@ const renderTable = () => {
             const value = row[key];
             const td = document.createElement('td');
             td.className = `px-4 py-2 border-b border-border whitespace-nowrap truncate max-w-[300px] ${idx < freezeCol ? 'sticky-col' : ''}`;
-            if (idx < freezeCol) td.style.left = `${idx * 100}px`;
             
             let displayValue = '';
             
@@ -594,27 +701,52 @@ const renderCompareItems = () => {
 };
 
 const updateStickyOffsets = () => {
-    const stickyCells = document.querySelectorAll('.sticky-col');
-    let currentLeft = 0;
-    let previousIndex = -1;
-    
-    const headerCells = elements.thead.querySelectorAll('th');
-    if (headerCells.length === 0) return;
+    const freezeColCount = getState().config.freezeCol || 0;
+    const headerCells = Array.from(elements.thead.querySelectorAll('th'));
+    const bodyRows = Array.from(elements.tbody.querySelectorAll('tr'));
 
-    let accumulatedWidths = [];
-    let acc = 0;
-    headerCells.forEach(th => {
-        accumulatedWidths.push(acc);
-        acc += th.getBoundingClientRect().width;
+    if (freezeColCount <= 0 || headerCells.length === 0) return;
+
+    const columnWidths = [];
+
+    for (let colIndex = 0; colIndex < freezeColCount; colIndex += 1) {
+        let maxWidth = headerCells[colIndex]?.getBoundingClientRect().width || 0;
+
+        bodyRows.forEach(row => {
+            const cell = row.children[colIndex];
+            if (cell) {
+                maxWidth = Math.max(maxWidth, cell.getBoundingClientRect().width);
+            }
+        });
+
+        columnWidths[colIndex] = Math.ceil(maxWidth);
+    }
+
+    const accumulatedLeft = [];
+    let runningLeft = 0;
+    for (let colIndex = 0; colIndex < freezeColCount; colIndex += 1) {
+        accumulatedLeft[colIndex] = runningLeft;
+        runningLeft += columnWidths[colIndex];
+    }
+
+    const syncCellPosition = (cell, colIndex) => {
+        if (!cell) return;
+
+        const width = `${columnWidths[colIndex]}px`;
+        cell.style.left = `${accumulatedLeft[colIndex]}px`;
+        cell.style.minWidth = width;
+        cell.style.width = width;
+        cell.style.maxWidth = width;
+        cell.style.boxSizing = 'border-box';
+    };
+
+    headerCells.slice(0, freezeColCount).forEach((cell, colIndex) => {
+        syncCellPosition(cell, colIndex);
     });
 
-    const rows = document.querySelectorAll('tr');
-    rows.forEach(row => {
-        const cells = row.children;
-        for (let i = 0; i < getState().config.freezeCol; i++) {
-            if (cells[i]) {
-                cells[i].style.left = `${accumulatedWidths[i]}px`;
-            }
+    bodyRows.forEach(row => {
+        for (let colIndex = 0; colIndex < freezeColCount; colIndex += 1) {
+            syncCellPosition(row.children[colIndex], colIndex);
         }
     });
 };
@@ -623,13 +755,16 @@ const updatePaginationControls = () => {
     const { pagination } = getState();
     const totalPages = Math.ceil(pagination.totalItems / pagination.pageSize) || 1;
     
-    elements.pageIndicator.textContent = `${pagination.currentPage} / ${totalPages}`;
-    
-    elements.prevBtn.disabled = pagination.currentPage <= 1;
-    elements.nextBtn.disabled = pagination.currentPage >= totalPages;
-    
     const start = (pagination.currentPage - 1) * pagination.pageSize + 1;
     const end = Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems);
+    const isMobileViewport = window.innerWidth <= 768;
+
+    elements.pageIndicator.textContent = pagination.totalItems > 0
+        ? (isMobileViewport ? `${start}-${end} / ${pagination.totalItems}` : `${pagination.currentPage} / ${totalPages}`)
+        : (isMobileViewport ? '0 / 0' : `${pagination.currentPage} / ${totalPages}`);
+
+    elements.prevBtn.disabled = pagination.currentPage <= 1;
+    elements.nextBtn.disabled = pagination.currentPage >= totalPages;
     elements.paginationInfo.textContent = pagination.totalItems > 0 
         ? `显示 ${start} - ${end} 条，共 ${pagination.totalItems} 条`
         : '无数据';
@@ -890,6 +1025,11 @@ const renderCompareDialogContent = () => {
         console.log(`Total parameters: ${filteredKeys.length}, Total pages: ${Math.ceil(filteredKeys.length / rowsPerPage)}, Current page: ${currentPage}, Parameters on current page: ${currentKeys.length}`); // 调试信息
         
         // 生成表格
+        resultHTML += `<div class="compare-overview">
+            <div class="compare-stat"><span class="compare-stat-label">对比条数</span><strong class="compare-stat-value">${compareItems.length}</strong></div>
+            <div class="compare-stat"><span class="compare-stat-label">参数项数</span><strong class="compare-stat-value">${filteredKeys.length}</strong></div>
+            <div class="compare-stat"><span class="compare-stat-label">当前模式</span><strong class="compare-stat-value">${compareDialogDisplayMode === 'average' ? '平均值' : '参数'}</strong></div>
+        </div>`;
         resultHTML += '<div class="compare-table-container">';
         resultHTML += '<table>';
         resultHTML += '<thead><tr><th class="sticky-first-col">参数</th>';
@@ -966,12 +1106,12 @@ const renderCompareDialogContent = () => {
         
         // 添加分页控制
         if (totalPages > 1) {
-            resultHTML += '<div class="pagination-controls flex items-center justify-center gap-4 mt-4">';
+            resultHTML += '<div class="compare-pagination pagination-controls flex items-center justify-center gap-4 mt-4">';
             resultHTML += `<button id="prev-page-compare" class="p-2 rounded-md hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors ${currentPage <= 1 ? 'opacity-30 cursor-not-allowed' : ''}" ${currentPage <= 1 ? 'disabled' : ''}>
                 <i data-lucide="chevron-left" class="w-4 h-4"></i>
             </button>`;
             
-            resultHTML += `<span class="text-sm font-medium min-w-[3rem] text-center">${currentPage} / ${totalPages}</span>`;
+            resultHTML += `<span class="compare-pagination-info text-sm font-medium min-w-[3rem] text-center">${currentPage} / ${totalPages}</span>`;
             
             resultHTML += `<button id="next-page-compare" class="p-2 rounded-md hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors ${currentPage >= totalPages ? 'opacity-30 cursor-not-allowed' : ''}" ${currentPage >= totalPages ? 'disabled' : ''}>
                 <i data-lucide="chevron-right" class="w-4 h-4"></i>
