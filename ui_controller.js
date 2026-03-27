@@ -1025,11 +1025,6 @@ const renderCompareDialogContent = () => {
         console.log(`Total parameters: ${filteredKeys.length}, Total pages: ${Math.ceil(filteredKeys.length / rowsPerPage)}, Current page: ${currentPage}, Parameters on current page: ${currentKeys.length}`); // 调试信息
         
         // 生成表格
-        resultHTML += `<div class="compare-overview">
-            <div class="compare-stat"><span class="compare-stat-label">对比条数</span><strong class="compare-stat-value">${compareItems.length}</strong></div>
-            <div class="compare-stat"><span class="compare-stat-label">参数项数</span><strong class="compare-stat-value">${filteredKeys.length}</strong></div>
-            <div class="compare-stat"><span class="compare-stat-label">当前模式</span><strong class="compare-stat-value">${compareDialogDisplayMode === 'average' ? '平均值' : '参数'}</strong></div>
-        </div>`;
         resultHTML += '<div class="compare-table-container">';
         resultHTML += '<table>';
         resultHTML += '<thead><tr><th class="sticky-first-col">参数</th>';
