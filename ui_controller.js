@@ -15,6 +15,16 @@ const elements = {
     resetBtn: document.getElementById('reset-btn'),
     container: document.getElementById('table-container'),
     searchInput: document.getElementById('search-input'),
+    mobileActiveSheet: document.getElementById('mobile-active-sheet'),
+    mobileResultCount: document.getElementById('mobile-result-count'),
+    mobileCompareTotal: document.getElementById('mobile-compare-total'),
+    mobileSearchMode: document.getElementById('mobile-search-mode'),
+    mobileUploadTrigger: document.getElementById('mobile-upload-trigger'),
+    mobileSelectionBar: document.getElementById('mobile-selection-bar'),
+    mobileSelectionSummary: document.getElementById('mobile-selection-summary'),
+    mobileSelectAllBtn: document.getElementById('mobile-select-all-btn'),
+    mobileOpenCompareBtn: document.getElementById('mobile-open-compare-btn'),
+    mobileClearSelectionBtn: document.getElementById('mobile-clear-selection-btn'),
     // 对比项显示元素
     compareItemsContainer: document.getElementById('compare-items-container'),
     compareItemsPlaceholder: document.getElementById('compare-items-placeholder'),
@@ -40,6 +50,7 @@ export const initUI = () => {
     const actionsMenuToggle = document.getElementById('actions-menu-toggle');
     const actionsMenu = document.getElementById('actions-menu');
     const actionsDrawerBackdrop = document.getElementById('actions-drawer-backdrop');
+    const fileInput = document.getElementById('file-upload');
 
     const toggleSidebar = () => {
         sidebar.classList.toggle('-translate-x-full');
@@ -48,6 +59,10 @@ export const initUI = () => {
 
     if (menuToggle) {
         menuToggle.addEventListener('click', toggleSidebar);
+    }
+
+    if (elements.mobileUploadTrigger && fileInput) {
+        elements.mobileUploadTrigger.addEventListener('click', () => fileInput.click());
     }
 
     if (sidebarBackdrop) {
@@ -188,6 +203,83 @@ export const initUI = () => {
             </div>
         `;
 
+        actionsMenu.innerHTML = `
+            <div class="flex h-full flex-col">
+                <div class="drawer-header">
+                    <div>
+                        <div class="drawer-header__title">快捷操作</div>
+                    </div>
+                    <button id="actions-drawer-close" class="drawer-header__close" aria-label="关闭快捷操作">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div class="drawer-body">
+                    <section class="drawer-section">
+                        <div class="drawer-section__header">
+                            <div class="drawer-section__title">常用操作</div>
+                        </div>
+                        <div class="drawer-primary-actions">
+                            <button data-action-id="compare-toggle" class="drawer-primary-button">
+                                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                                <span>查看对比</span>
+                            </button>
+                            <button data-action-id="select-all-btn" class="drawer-secondary-button">
+                                <i data-lucide="check-square" class="w-4 h-4"></i>
+                                <span>全选当前页</span>
+                            </button>
+                            <button data-action-id="clear-selection-btn" class="drawer-secondary-button">
+                                <i data-lucide="square" class="w-4 h-4"></i>
+                                <span>清空选择</span>
+                            </button>
+                        </div>
+                        <button data-action-id="export-json" class="drawer-text-action">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span>导出 JSON</span>
+                        </button>
+                    </section>
+                    <section class="drawer-section">
+                        <div class="drawer-section__header">
+                            <div class="drawer-section__title">显示设置</div>
+                        </div>
+                        <div class="drawer-mode-card">
+                            <div class="drawer-mode-card__label">表格显示方式</div>
+                            <div class="drawer-segmented-control">
+                                <button id="mode-average-mobile" class="drawer-segmented-control__item transition-colors">平均值</button>
+                                <button id="mode-all-mobile" class="drawer-segmented-control__item transition-colors">参数</button>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="drawer-section">
+                        <div class="drawer-section__header">
+                            <div class="drawer-section__title">表格冻结</div>
+                        </div>
+                        <div class="drawer-settings-card">
+                            <label for="freeze-row-mobile" class="drawer-setting-row">
+                                <span class="drawer-setting-row__text">
+                                    <span class="drawer-setting-row__title">冻结行</span>
+                                    <span class="drawer-setting-row__desc">表头保持在顶部</span>
+                                </span>
+                                <span class="drawer-setting-row__control">
+                                    <i data-lucide="snowflake" class="w-4 h-4"></i>
+                                    <input type="number" id="freeze-row-mobile" min="0" max="10" class="drawer-number-input">
+                                </span>
+                            </label>
+                            <label for="freeze-col-mobile" class="drawer-setting-row">
+                                <span class="drawer-setting-row__text">
+                                    <span class="drawer-setting-row__title">冻结列</span>
+                                    <span class="drawer-setting-row__desc">左侧关键列始终可见</span>
+                                </span>
+                                <span class="drawer-setting-row__control">
+                                    <i data-lucide="snowflake" class="w-4 h-4"></i>
+                                    <input type="number" id="freeze-col-mobile" min="0" max="5" class="drawer-number-input">
+                                </span>
+                            </label>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        `;
+
         actionsMenu.addEventListener('click', (e) => {
             const button = e.target.closest('button');
             if (!button) return;
@@ -250,6 +342,24 @@ export const initUI = () => {
     
     // 绑定事件
     searchModeBtn.addEventListener('click', toggleSearchMode);
+
+    if (elements.mobileSelectAllBtn) {
+        elements.mobileSelectAllBtn.addEventListener('click', () => {
+            selectAllFilteredItems();
+        });
+    }
+
+    if (elements.mobileOpenCompareBtn) {
+        elements.mobileOpenCompareBtn.addEventListener('click', () => {
+            showCompareDialog();
+        });
+    }
+
+    if (elements.mobileClearSelectionBtn) {
+        elements.mobileClearSelectionBtn.addEventListener('click', () => {
+            clearAllSelections();
+        });
+    }
     
     document.getElementById('mode-average').addEventListener('click', () => {
         setState({ config: { ...getState().config, displayMode: 'average' } });
@@ -344,6 +454,7 @@ export const initUI = () => {
     
     // 初始化搜索模式按钮状态
     updateSearchModeButton();
+    updateMobileOverview();
     
     // 初始化Lucide图标
     lucide.createIcons();
@@ -373,6 +484,7 @@ const toggleSearchMode = () => {
     
     // 更新按钮显示
     updateSearchModeButton();
+    updateMobileOverview();
 };
 
 const updateSearchModeButton = () => {
@@ -386,6 +498,35 @@ const updateSearchModeButton = () => {
     }
     
     lucide.createIcons();
+};
+
+const updateMobileOverview = () => {
+    const { activeSheetName, processedData, compareItems, config, file } = getState();
+
+    if (elements.mobileActiveSheet) {
+        elements.mobileActiveSheet.textContent = activeSheetName || (file ? '请选择工作表' : '未选择数据');
+    }
+
+    if (elements.mobileResultCount) {
+        elements.mobileResultCount.textContent = String(processedData.length || 0);
+    }
+
+    if (elements.mobileCompareTotal) {
+        elements.mobileCompareTotal.textContent = String(compareItems.length || 0);
+    }
+
+    if (elements.mobileSearchMode) {
+        elements.mobileSearchMode.textContent = config.isPreciseSearch ? '精确' : '模糊';
+    }
+
+    if (elements.mobileSelectionSummary) {
+        elements.mobileSelectionSummary.textContent = `已选 ${compareItems.length} 项`;
+    }
+
+    if (elements.mobileSelectionBar) {
+        const shouldShowBar = Boolean(file) || processedData.length > 0 || compareItems.length > 0;
+        elements.mobileSelectionBar.classList.toggle('hidden', !shouldShowBar);
+    }
 };
 
 const updateModeButtons = () => {
@@ -405,8 +546,8 @@ const updateModeButtons = () => {
     const modeAverageMobile = document.getElementById('mode-average-mobile');
     const modeAllMobile = document.getElementById('mode-all-mobile');
     if(modeAverageMobile && modeAllMobile) {
-        modeAverageMobile.className = `px-2 py-1 transition-colors ${displayMode === 'average' ? activeClass : inactiveClass}`;
-        modeAllMobile.className = `px-2 py-1 transition-colors ${displayMode === 'all' ? activeClass : inactiveClass}`;
+        modeAverageMobile.className = `drawer-segmented-control__item transition-colors ${displayMode === 'average' ? activeClass : inactiveClass}`;
+        modeAllMobile.className = `drawer-segmented-control__item transition-colors ${displayMode === 'all' ? activeClass : inactiveClass}`;
     }
 };
 
@@ -498,6 +639,7 @@ const renderSidebar = (sheets, active) => {
         };
         elements.sheetList.appendChild(div);
     });
+    updateMobileOverview();
     lucide.createIcons();
 };
 
@@ -904,6 +1046,13 @@ const executeCompare = () => {
 let compareDialogDisplayMode = 'average'; // 默认为平均值模式
 
 const showCompareDialog = () => {
+    const { compareItems } = getState();
+
+    if (!compareItems || compareItems.length === 0) {
+        showToast('请先选择要对比的数据项');
+        return;
+    }
+
     const dialog = document.getElementById('compare-dialog');
     const content = document.getElementById('compare-dialog-content');
     const closeBtn = document.getElementById('close-compare-dialog');
@@ -1225,8 +1374,16 @@ const renderCompareDialogContent = () => {
 
 export const showToast = (message, type = 'info') => {
     const container = document.getElementById('toast-container');
+    const existingToast = container.querySelector(`.toast[data-message="${CSS.escape(message)}"][data-type="${CSS.escape(type)}"]:not(.exiting)`);
+
+    if (existingToast) {
+        return;
+    }
+
     const toast = document.createElement('div');
     toast.className = `toast pointer-events-auto flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-sm font-medium border ${type === 'error' ? 'bg-destructive text-white border-destructive' : 'bg-foreground text-background border-border'}`;
+    toast.dataset.message = message;
+    toast.dataset.type = type;
     toast.innerHTML = `<span>${message}</span>`;
     
     container.appendChild(toast);
