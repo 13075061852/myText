@@ -216,29 +216,6 @@ export const initUI = () => {
                 <div class="drawer-body">
                     <section class="drawer-section">
                         <div class="drawer-section__header">
-                            <div class="drawer-section__title">常用操作</div>
-                        </div>
-                        <div class="drawer-primary-actions">
-                            <button data-action-id="compare-toggle" class="drawer-primary-button">
-                                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
-                                <span>查看对比</span>
-                            </button>
-                            <button data-action-id="select-all-btn" class="drawer-secondary-button">
-                                <i data-lucide="check-square" class="w-4 h-4"></i>
-                                <span>全选当前页</span>
-                            </button>
-                            <button data-action-id="clear-selection-btn" class="drawer-secondary-button">
-                                <i data-lucide="square" class="w-4 h-4"></i>
-                                <span>清空选择</span>
-                            </button>
-                        </div>
-                        <button data-action-id="export-json" class="drawer-text-action">
-                            <i data-lucide="download" class="w-4 h-4"></i>
-                            <span>导出 JSON</span>
-                        </button>
-                    </section>
-                    <section class="drawer-section">
-                        <div class="drawer-section__header">
                             <div class="drawer-section__title">显示设置</div>
                         </div>
                         <div class="drawer-mode-card">
