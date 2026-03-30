@@ -73,6 +73,7 @@ export const initUI = () => {
         const swipeDistance = touchEndX - touchStartX;
         const sidebar = document.getElementById('sidebar');
         const isSidebarOpen = !sidebar.classList.contains('-translate-x-full');
+        const isActionsDrawerOpen = actionsMenu && !actionsMenu.classList.contains('hidden');
 
         // 从左侧边缘向右滑动打开侧边栏（只在侧边栏关闭时）
         if (swipeDistance > minSwipeDistance && touchStartX < 30 && !isSidebarOpen) {
@@ -84,6 +85,14 @@ export const initUI = () => {
         if (swipeDistance < -minSwipeDistance && isSidebarOpen) {
             sidebar.classList.add('-translate-x-full');
             sidebarBackdrop.classList.add('hidden');
+        }
+
+        if (swipeDistance < -minSwipeDistance && touchStartX > window.innerWidth - 30 && !isActionsDrawerOpen) {
+            openActionsDrawer();
+        }
+
+        if (swipeDistance > minSwipeDistance && isActionsDrawerOpen) {
+            closeActionsDrawer();
         }
     };
 
