@@ -189,15 +189,6 @@ export const initUI = () => {
 
         actionsMenu.innerHTML = `
             <div class="flex h-full flex-col">
-                <div class="flex items-center justify-between border-b border-border px-4 py-4">
-                    <div>
-                        <div class="text-sm font-semibold text-foreground">快捷操作</div>
-                        <div class="mt-1 text-xs text-muted-foreground">常用动作、显示模式和冻结设置</div>
-                    </div>
-                    <button id="actions-drawer-close" class="inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-accent" aria-label="关闭快捷操作">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
-                </div>
                 <div class="flex-1 overflow-y-auto px-3 py-3">
                     ${actionsHTML}
                 </div>
@@ -206,14 +197,6 @@ export const initUI = () => {
 
         actionsMenu.innerHTML = `
             <div class="flex h-full flex-col">
-                <div class="drawer-header">
-                    <div>
-                        <div class="drawer-header__title">快捷操作</div>
-                    </div>
-                    <button id="actions-drawer-close" class="drawer-header__close" aria-label="关闭快捷操作">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
-                </div>
                 <div class="drawer-body">
                     <section class="drawer-section">
                         <div class="drawer-section__header">
