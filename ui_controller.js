@@ -15,16 +15,17 @@ const elements = {
     resetBtn: document.getElementById('reset-btn'),
     container: document.getElementById('table-container'),
     searchInput: document.getElementById('search-input'),
+    mobileTopTitle: document.getElementById('mobile-top-title'),
     mobileActiveSheet: document.getElementById('mobile-active-sheet'),
     mobileResultCount: document.getElementById('mobile-result-count'),
     mobileCompareTotal: document.getElementById('mobile-compare-total'),
     mobileSearchMode: document.getElementById('mobile-search-mode'),
-    mobileUploadTrigger: document.getElementById('mobile-upload-trigger'),
     mobileSelectionBar: document.getElementById('mobile-selection-bar'),
     mobileSelectionSummary: document.getElementById('mobile-selection-summary'),
     mobileFooterSelectionCount: document.getElementById('mobile-footer-selection-count'),
     mobileSelectAllBtn: document.getElementById('mobile-select-all-btn'),
     mobileOpenCompareBtn: document.getElementById('mobile-open-compare-btn'),
+    mobileToggleModeBtn: document.getElementById('mobile-toggle-mode-btn'),
     mobileClearSelectionBtn: document.getElementById('mobile-clear-selection-btn'),
     // 对比项显示元素
     compareItemsContainer: document.getElementById('compare-items-container'),
@@ -60,10 +61,6 @@ export const initUI = () => {
 
     if (menuToggle) {
         menuToggle.addEventListener('click', toggleSidebar);
-    }
-
-    if (elements.mobileUploadTrigger && fileInput) {
-        elements.mobileUploadTrigger.addEventListener('click', () => fileInput.click());
     }
 
     if (sidebarBackdrop) {
@@ -317,6 +314,17 @@ export const initUI = () => {
         });
     }
 
+    if (elements.mobileToggleModeBtn) {
+        elements.mobileToggleModeBtn.addEventListener('click', () => {
+            const { config } = getState();
+            const nextMode = config.displayMode === 'average' ? 'all' : 'average';
+            setState({ config: { ...config, displayMode: nextMode } });
+            renderTable();
+            updateModeButtons();
+            updateMobileOverview();
+        });
+    }
+
     if (elements.mobileClearSelectionBtn) {
         elements.mobileClearSelectionBtn.addEventListener('click', () => {
             clearAllSelections();
@@ -473,6 +481,10 @@ const updateMobileOverview = () => {
         elements.mobileActiveSheet.textContent = currentSheetLabel;
     }
 
+    if (elements.mobileTopTitle) {
+        elements.mobileTopTitle.textContent = currentSheetLabel;
+    }
+
     if (elements.mobileResultCount) {
         elements.mobileResultCount.textContent = resultCount;
     }
@@ -527,6 +539,19 @@ const updateModeButtons = () => {
             mobileGroup.dataset.activeMode = displayMode;
         }
     }
+
+    const mobileToggleModeBtn = elements.mobileToggleModeBtn;
+    if (mobileToggleModeBtn) {
+        const isAverage = displayMode === 'average';
+        mobileToggleModeBtn.querySelector('span').textContent = isAverage ? '平均值' : '参数';
+        const icon = mobileToggleModeBtn.querySelector('i');
+        if (icon) {
+            icon.setAttribute('data-lucide', isAverage ? 'toggle-right' : 'toggle-left');
+        }
+        mobileToggleModeBtn.classList.toggle('mobile-selection-btn--primary', !isAverage);
+    }
+
+    lucide.createIcons();
 };
 
 const renderReset = () => {

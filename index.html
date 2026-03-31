@@ -76,7 +76,7 @@
 
             <div class="px-3 pb-3">
                 <label for="file-upload"
-                    class="flex items-center justify-center w-full h-10 px-3 transition bg-primary text-primary-foreground rounded-lg shadow-sm cursor-pointer hover:opacity-90 focus:outline-none active:scale-95 text-sm">
+                    class="hidden lg:flex items-center justify-center w-full h-10 px-3 transition bg-primary text-primary-foreground rounded-lg shadow-sm cursor-pointer hover:opacity-90 focus:outline-none active:scale-95 text-sm">
                     <i data-lucide="upload" class="w-4 h-4 mr-1.5"></i>
                     <span class="font-medium">导入 Excel</span>
                     <input id="file-upload" type="file" class="hidden" accept=".xlsx, .xls, .csv" />
@@ -130,7 +130,7 @@
                             <button id="menu-toggle" class="p-2 -ml-2 rounded-md hover:bg-accent active:bg-accent/80 touch-manipulation lg:hidden" aria-label="打开菜单">
                             <i data-lucide="menu" class="w-5 h-5"></i>
                         </button>
-                            <h1 class="text-base font-semibold tracking-tight lg:hidden">广俊数据分析</h1>
+                            <h1 id="mobile-top-title" class="text-base font-semibold tracking-tight lg:hidden">未选择数据</h1>
                         </div>
 
                         <!-- Mobile Actions Drawer Trigger -->
@@ -141,6 +141,7 @@
                                 <i data-lucide="more-vertical" class="w-5 h-5"></i>
                             </button>
                         </div>
+
                     </div>
 
                     <!-- Row 2: Search Bar -->
@@ -212,10 +213,6 @@
                         <p class="mobile-overview__eyebrow">当前工作表</p>
                         <h2 id="mobile-active-sheet" class="mobile-overview__title">未选择数据</h2>
                     </div>
-                    <button id="mobile-upload-trigger" class="mobile-overview__upload" type="button">
-                        <i data-lucide="upload" class="w-4 h-4"></i>
-                        <span>导入</span>
-                    </button>
                 </div>
                 <div class="mobile-overview__stats">
                     <div class="mobile-stat-card">
@@ -259,11 +256,15 @@
                 <div class="mobile-selection-bar__actions">
                     <button id="mobile-select-all-btn" type="button" class="mobile-selection-btn">
                         <i data-lucide="check-square" class="w-4 h-4"></i>
-                        <span>全选本页</span>
+                        <span>全选</span>
                     </button>
                     <button id="mobile-open-compare-btn" type="button" class="mobile-selection-btn mobile-selection-btn--primary">
                         <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
-                        <span>查看对比</span>
+                        <span>对比</span>
+                    </button>
+                    <button id="mobile-toggle-mode-btn" type="button" class="mobile-selection-btn">
+                        <i data-lucide="toggle-left" class="w-4 h-4"></i>
+                        <span>参数</span>
                     </button>
                     <button id="mobile-clear-selection-btn" type="button" class="mobile-selection-btn">
                         <i data-lucide="square" class="w-4 h-4"></i>
