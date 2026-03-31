@@ -22,6 +22,7 @@ const elements = {
     mobileUploadTrigger: document.getElementById('mobile-upload-trigger'),
     mobileSelectionBar: document.getElementById('mobile-selection-bar'),
     mobileSelectionSummary: document.getElementById('mobile-selection-summary'),
+    mobileFooterSelectionCount: document.getElementById('mobile-footer-selection-count'),
     mobileSelectAllBtn: document.getElementById('mobile-select-all-btn'),
     mobileOpenCompareBtn: document.getElementById('mobile-open-compare-btn'),
     mobileClearSelectionBtn: document.getElementById('mobile-clear-selection-btn'),
@@ -221,6 +222,7 @@ export const initUI = () => {
                         <div class="drawer-mode-card">
                             <div class="drawer-mode-card__label">表格显示方式</div>
                             <div class="drawer-segmented-control">
+                                <span class="drawer-segmented-control__slider" aria-hidden="true"></span>
                                 <button id="mode-average-mobile" class="drawer-segmented-control__item transition-colors">平均值</button>
                                 <button id="mode-all-mobile" class="drawer-segmented-control__item transition-colors">参数</button>
                             </div>
@@ -479,25 +481,33 @@ const updateSearchModeButton = () => {
 
 const updateMobileOverview = () => {
     const { activeSheetName, processedData, compareItems, config, file } = getState();
+    const currentSheetLabel = activeSheetName || (file ? '请选择工作表' : '未选择数据');
+    const resultCount = String(processedData.length || 0);
+    const compareCount = String(compareItems.length || 0);
+    const searchModeLabel = config.isPreciseSearch ? '精确' : '模糊';
 
     if (elements.mobileActiveSheet) {
-        elements.mobileActiveSheet.textContent = activeSheetName || (file ? '请选择工作表' : '未选择数据');
+        elements.mobileActiveSheet.textContent = currentSheetLabel;
     }
 
     if (elements.mobileResultCount) {
-        elements.mobileResultCount.textContent = String(processedData.length || 0);
+        elements.mobileResultCount.textContent = resultCount;
     }
 
     if (elements.mobileCompareTotal) {
-        elements.mobileCompareTotal.textContent = String(compareItems.length || 0);
+        elements.mobileCompareTotal.textContent = compareCount;
     }
 
     if (elements.mobileSearchMode) {
-        elements.mobileSearchMode.textContent = config.isPreciseSearch ? '精确' : '模糊';
+        elements.mobileSearchMode.textContent = searchModeLabel;
     }
 
     if (elements.mobileSelectionSummary) {
         elements.mobileSelectionSummary.textContent = `已选 ${compareItems.length} 项`;
+    }
+
+    if (elements.mobileFooterSelectionCount) {
+        elements.mobileFooterSelectionCount.textContent = `已选 ${compareItems.length} 项`;
     }
 
     if (elements.mobileSelectionBar) {
@@ -508,8 +518,8 @@ const updateMobileOverview = () => {
 
 const updateModeButtons = () => {
     const { displayMode } = getState().config;
-    const activeClass = 'bg-primary text-primary-foreground';
-    const inactiveClass = 'bg-background text-foreground hover:bg-accent';
+    const activeClass = 'relative z-10 rounded-xl border border-transparent bg-transparent text-primary-foreground';
+    const inactiveClass = 'relative z-10 rounded-xl border border-transparent bg-transparent text-foreground/78 hover:text-foreground';
 
     // Desktop buttons
     const modeAverageDesktop = document.getElementById('mode-average');
@@ -517,6 +527,10 @@ const updateModeButtons = () => {
     if(modeAverageDesktop && modeAllDesktop) {
         modeAverageDesktop.className = `px-2 py-1 transition-colors ${displayMode === 'average' ? activeClass : inactiveClass}`;
         modeAllDesktop.className = `px-2 py-1 transition-colors ${displayMode === 'all' ? activeClass : inactiveClass}`;
+        const desktopGroup = modeAverageDesktop.parentElement;
+        if (desktopGroup) {
+            desktopGroup.dataset.activeMode = displayMode;
+        }
     }
 
     // Mobile buttons
@@ -525,6 +539,10 @@ const updateModeButtons = () => {
     if(modeAverageMobile && modeAllMobile) {
         modeAverageMobile.className = `drawer-segmented-control__item transition-colors ${displayMode === 'average' ? activeClass : inactiveClass}`;
         modeAllMobile.className = `drawer-segmented-control__item transition-colors ${displayMode === 'all' ? activeClass : inactiveClass}`;
+        const mobileGroup = modeAverageMobile.parentElement;
+        if (mobileGroup) {
+            mobileGroup.dataset.activeMode = displayMode;
+        }
     }
 };
 
@@ -662,14 +680,16 @@ const renderTable = () => {
         Object.keys(row).forEach(key => allKeys.add(key));
     });
     
-    // 创建表头（始终显示，即使freezeRow为0）
+    // 创建表头
     const headerRow = Array.from(allKeys);
     const tr = document.createElement('tr');
     headerRow.forEach((key, idx) => {
         const th = document.createElement('th');
         th.className = `px-4 py-3 font-medium border-b border-border text-xs whitespace-nowrap ${idx < freezeCol ? 'sticky-col' : ''} ${idx < freezeCol ? 'z-30' : ''}`;
-        // 添加sticky-header类以确保表头不透明
-        th.classList.add('sticky-header');
+        if (freezeRow > 0) {
+            // 仅在开启冻结行时才让表头 sticky
+            th.classList.add('sticky-header');
+        }
         th.textContent = key || '';
         tr.appendChild(th);
     });
@@ -833,21 +853,38 @@ const updateStickyOffsets = () => {
     const headerCells = Array.from(elements.thead.querySelectorAll('th'));
     const bodyRows = Array.from(elements.tbody.querySelectorAll('tr'));
 
-    if (freezeColCount <= 0 || headerCells.length === 0) return;
+    if (freezeColCount <= 0 || headerCells.length === 0) {
+        headerCells.forEach(cell => {
+            cell.style.left = '';
+            cell.style.minWidth = '';
+            cell.style.width = '';
+            cell.style.maxWidth = '';
+        });
+
+        bodyRows.forEach(row => {
+            Array.from(row.children).forEach(cell => {
+                cell.style.left = '';
+                cell.style.minWidth = '';
+                cell.style.width = '';
+                cell.style.maxWidth = '';
+            });
+        });
+        return;
+    }
 
     const columnWidths = [];
 
     for (let colIndex = 0; colIndex < freezeColCount; colIndex += 1) {
-        let maxWidth = headerCells[colIndex]?.getBoundingClientRect().width || 0;
+        let maxWidth = headerCells[colIndex]?.offsetWidth || 0;
 
         bodyRows.forEach(row => {
             const cell = row.children[colIndex];
             if (cell) {
-                maxWidth = Math.max(maxWidth, cell.getBoundingClientRect().width);
+                maxWidth = Math.max(maxWidth, cell.offsetWidth);
             }
         });
 
-        columnWidths[colIndex] = Math.ceil(maxWidth);
+        columnWidths[colIndex] = maxWidth;
     }
 
     const accumulatedLeft = [];

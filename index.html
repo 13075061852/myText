@@ -144,11 +144,13 @@
                     </div>
 
                     <!-- Row 2: Search Bar -->
-                    <div class="search-shell relative mt-3 w-full lg:mt-0 lg:flex-1 flex items-center gap-2">
-                        <i data-lucide="search"
-                            class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors"></i>
-                        <input type="text" id="search-input" placeholder="搜索当前表..."
-                            class="h-9 w-full rounded-md border border-input bg-transparent px-9 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
+                    <div class="search-row mt-3 w-full lg:mt-0 lg:flex-1 flex items-center gap-2">
+                        <div class="search-shell relative flex-1">
+                            <i data-lucide="search"
+                                class="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors"></i>
+                            <input type="text" id="search-input" placeholder="搜索当前表..."
+                                class="h-9 w-full rounded-md border border-input bg-transparent px-9 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50">
+                        </div>
                         <button id="search-mode-btn"
                             class="shrink-0 inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-3 py-2">
                             <!-- Icon and text will be set by JS -->
@@ -179,8 +181,8 @@
 
                         <!-- Display Mode Toggle -->
                         <div class="toolbar-display-mode flex items-center gap-2">
-                            <span class="text-xs text-muted-foreground">显示模式:</span>
-                            <div class="flex rounded-md overflow-hidden border border-input text-xs">
+                            <div class="display-mode-group flex text-xs">
+                                <span class="display-mode-slider" aria-hidden="true"></span>
                                 <button id="mode-average" class="px-2 py-1 transition-colors">平均值</button>
                                 <button id="mode-all" class="px-2 py-1 transition-colors">参数</button>
                             </div>
@@ -252,7 +254,6 @@
 
             <div id="mobile-selection-bar" class="mobile-selection-bar hidden lg:hidden">
                 <div class="mobile-selection-bar__meta">
-                    <span class="mobile-selection-bar__label">快捷操作</span>
                     <strong id="mobile-selection-summary" class="mobile-selection-bar__value">已选 0 项</strong>
                 </div>
                 <div class="mobile-selection-bar__actions">
@@ -276,6 +277,7 @@
                 <div class="text-xs text-muted-foreground hidden sm:block" id="pagination-info">
                     显示 0 - 0 条，共 0 条
                 </div>
+                <div id="mobile-footer-selection-count" class="mobile-footer-selection-count lg:hidden">已选 0 项</div>
                 <div class="flex items-center gap-2">
                     <button id="prev-page"
                         class="p-1 rounded-md hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
