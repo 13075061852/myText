@@ -48,8 +48,8 @@ export const createSidebarController = ({
                 <span class="truncate">${sheet}</span>
             </div>
             <div class="flex items-center gap-1">
-                <span class="bg-secondary text-secondary-foreground text-xs rounded-full px-2 py-0.5">${count}</span>
-                ${compareCount > 0 ? `<span class="bg-primary text-primary-foreground text-xs rounded-full px-2 py-0.5">${compareCount}</span>` : ''}
+                <span class="sheet-count-badge">${count}</span>
+                ${compareCount > 0 ? `<span class="sheet-count-badge sheet-count-badge--active">${compareCount}</span>` : ''}
             </div>
         `;
             div.onclick = () => {

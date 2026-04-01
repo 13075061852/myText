@@ -74,15 +74,6 @@
                 </button>
             </div>
 
-            <div class="px-3 pb-3">
-                <label for="file-upload"
-                    class="hidden lg:flex items-center justify-center w-full h-10 px-3 transition bg-primary text-primary-foreground rounded-lg shadow-sm cursor-pointer hover:opacity-90 focus:outline-none active:scale-95 text-sm">
-                    <i data-lucide="upload" class="w-4 h-4 mr-1.5"></i>
-                    <span class="font-medium">导入 Excel</span>
-                    <input id="file-upload" type="file" class="hidden" accept=".xlsx, .xls, .csv" />
-                </label>
-            </div>
-
             <div class="flex-1 overflow-y-auto py-2 px-2 space-y-1" id="sheet-list">
                 <!-- Sheet items injected here -->
                 <div class="text-xs text-muted-foreground text-center mt-10">
@@ -92,6 +83,12 @@
 
             <!-- 对比项显示区域 -->
             <div class="px-3 py-2 border-t border-border">
+                <label for="file-upload"
+                    class="sidebar-upload-trigger hidden lg:flex items-center justify-center w-full h-10 px-3 transition bg-primary text-primary-foreground rounded-lg shadow-sm cursor-pointer hover:opacity-90 focus:outline-none active:scale-95 text-sm mb-3">
+                    <i data-lucide="upload" class="w-4 h-4 mr-1.5"></i>
+                    <span class="font-medium">导入 Excel</span>
+                    <input id="file-upload" type="file" class="hidden" accept=".xlsx, .xls, .csv" />
+                </label>
                 <div class="flex items-center justify-between">
                     <div class="text-xs font-medium text-muted-foreground">对比项</div>
                     <span id="compare-count"
@@ -180,7 +177,6 @@
 
                         <div class="h-6 w-px bg-border mx-2"></div>
 
-                        <!-- Display Mode Toggle -->
                         <div class="toolbar-display-mode flex items-center gap-2">
                             <div class="display-mode-group flex text-xs">
                                 <span class="display-mode-slider" aria-hidden="true"></span>
@@ -189,7 +185,6 @@
                             </div>
                         </div>
 
-                        <!-- Freeze Controls -->
                         <div class="toolbar-freeze-controls flex items-center gap-2 text-sm text-muted-foreground">
                             <i data-lucide="snowflake" class="w-4 h-4"></i>
                             <div class="flex items-center gap-1">
