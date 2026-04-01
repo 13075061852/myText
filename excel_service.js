@@ -1,31 +1,23 @@
 import { setState, getState } from './state_manager.js';
+import {
+    DEFAULT_TEST_FILE_NAME,
+    DEFAULT_TEST_FILE_PATH,
+    MODEL_KEY,
+    BATCH_KEY,
+    calculateNumericAverage,
+    isIdentifierKey,
+    isNumericLike,
+    isSpecialMarkedValue,
+    matchesModelQuery,
+    parseNumericValue
+} from './data_utils.js';
 
 /**
  * 计算数组的平均值
  * @param {Array} arr - 数字数组
  * @returns {number} 平均值
  */
-export const calculateAverage = (arr) => {
-    if (!Array.isArray(arr) || arr.length === 0) {
-        return 0;
-    }
-    
-    // 过滤出数字值，同时处理特殊标记（如'>10'）
-    const numbers = arr.filter(value => {
-        // 如果是特殊标记，不参与平均值计算
-        if (typeof value === 'string' && (value.startsWith('>') || value.startsWith('<'))) {
-            return false;
-        }
-        return !isNaN(parseFloat(value));
-    }).map(value => parseFloat(value));
-    
-    if (numbers.length === 0) {
-        return 0;
-    }
-    
-    const sum = numbers.reduce((acc, num) => acc + num, 0);
-    return sum / numbers.length;
-};
+export const calculateAverage = calculateNumericAverage;
 
 /**
  * 合并字段值到目标对象
@@ -35,14 +27,8 @@ export const calculateAverage = (arr) => {
  * @param {boolean} isIdentifier - 是否为标识字段（型号或批次）
  */
 export const mergeFieldValue = (targetObj, key, value, isIdentifier) => {
-    // 对于标识字段不过滤，其他字段保留数字类型值和特殊标记（如'>10'）
-    if (!isIdentifier) {
-        // 检查是否为特殊标记格式（如'>10', '<5'等）
-        if (typeof value === 'string' && (value.startsWith('>') || value.startsWith('<'))) {
-            // 保留特殊标记
-        } else if (isNaN(parseFloat(value)) || !isFinite(value)) {
-            return;
-        }
+    if (!isIdentifier && !isNumericLike(value)) {
+        return;
     }
     
     // 处理字段名相似的情况，将它们合并到同一个数组中
@@ -68,27 +54,17 @@ export const mergeFieldValue = (targetObj, key, value, isIdentifier) => {
         }
     }
     
-    // 调试信息：输出要处理的值
-    console.log('mergeFieldValue 处理的值:', value, '类型:', typeof value, '是否为特殊标记:', typeof value === 'string' && (value.startsWith('>') || value.startsWith('<')));
-    
-    // 如果字段已存在，则转换为数组并添加新值
+    const normalizedValue = (isIdentifier || isSpecialMarkedValue(value))
+        ? value
+        : parseNumericValue(value);
+
     if (existingKey) {
         if (!Array.isArray(targetObj[existingKey])) {
             targetObj[existingKey] = [targetObj[existingKey]];
         }
-        // 根据是否为特殊标记来决定是否转换为数字
-        if (isIdentifier || (typeof value === 'string' && (value.startsWith('>') || value.startsWith('<')))) {
-            targetObj[existingKey].push(value);
-        } else {
-            targetObj[existingKey].push(parseFloat(value));
-        }
+        targetObj[existingKey].push(normalizedValue);
     } else {
-        // 根据是否为特殊标记来决定是否转换为数字
-        if (isIdentifier || (typeof value === 'string' && (value.startsWith('>') || value.startsWith('<')))) {
-            targetObj[key] = value;
-        } else {
-            targetObj[key] = parseFloat(value);
-        }
+        targetObj[key] = normalizedValue;
     }
 };
 
@@ -100,7 +76,7 @@ export const loadDefaultTestFile = () => {
         // 创建XMLHttpRequest对象来加载本地测试文件
         const xhr = new XMLHttpRequest();
         // 使用相对路径加载测试文件
-        xhr.open('GET', './测试数据.xlsx', true);
+        xhr.open('GET', DEFAULT_TEST_FILE_PATH, true);
         xhr.responseType = 'arraybuffer';
         xhr.timeout = 10000; // 设置10秒超时
         
@@ -114,17 +90,12 @@ export const loadDefaultTestFile = () => {
                     
                     // 将文件数据转换为Uint8Array格式
                     const data = new Uint8Array(xhr.response);
-                    console.log('文件大小:', data.length, '字节');
-                    
                     if (data.length === 0) {
                         throw new Error('文件内容为空');
                     }
                     
-                    // 使用SheetJS读取Excel工作簿
                     const workbook = XLSX.read(data, { type: 'array' });
-                    console.log('工作簿:', workbook);
-                    
-                    // 检查是否有工作表
+
                     if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
                         throw new Error('Excel文件中没有找到工作表');
                     }
@@ -141,7 +112,7 @@ export const loadDefaultTestFile = () => {
                     });
 
                     setState({
-                        file: { name: '测试数据.xlsx', size: data.length },
+                        file: { name: DEFAULT_TEST_FILE_NAME, size: data.length },
                         workbook: workbook,
                         sheetNames: sheetNames,
                         data: dataMap,
@@ -227,7 +198,7 @@ export const handleFileUpload = async (file) => {
  * 处理所有工作表的数据（预先合并所有工作表的数据）
  */
 export const processAllSheets = () => {
-    const { data, activeSheetName, config } = getState();
+    const { data } = getState();
     
     if (!data) return;
 
@@ -242,7 +213,7 @@ export const processAllSheets = () => {
         // 遍历工作表中的每一行数据
         for (let index = 0; index < rawData.length; index++) {
             const row = rawData[index];
-            if (row['型号']) {
+            if (row[MODEL_KEY]) {
                 // 创建一个新的合并对象，包含当前行和往后两条数据的所有参数
                 const mergedRow = {};
                 
@@ -250,7 +221,7 @@ export const processAllSheets = () => {
                 for (const key in row) {
                     if (row[key] !== null && row[key] !== undefined && row[key] !== '') {
                         // 检查是否为型号或批次字段
-                        const isIdentifier = (key === '型号' || key === '批次');
+                        const isIdentifier = isIdentifierKey(key);
                         mergeFieldValue(mergedRow, key, row[key], isIdentifier);
                     }
                 }
@@ -261,7 +232,7 @@ export const processAllSheets = () => {
                     for (const key in nextRow) {
                         if (nextRow[key] !== null && nextRow[key] !== undefined && nextRow[key] !== '') {
                             // 检查是否为型号或批次字段
-                            const isIdentifier = (key === '型号' || key === '批次');
+                            const isIdentifier = isIdentifierKey(key);
                             mergeFieldValue(mergedRow, key, nextRow[key], isIdentifier);
                         }
                     }
@@ -273,7 +244,7 @@ export const processAllSheets = () => {
                     for (const key in nextNextRow) {
                         if (nextNextRow[key] !== null && nextNextRow[key] !== undefined && nextNextRow[key] !== '') {
                             // 检查是否为型号或批次字段
-                            const isIdentifier = (key === '型号' || key === '批次');
+                            const isIdentifier = isIdentifierKey(key);
                             mergeFieldValue(mergedRow, key, nextNextRow[key], isIdentifier);
                         }
                     }
@@ -331,20 +302,8 @@ export const filterData = (data, searchTerm, isPrecise = false) => {
     if (!searchTerm) {
         return data;
     }
-    
-    // 过滤数据 - 只在型号字段中搜索
-    return data.filter(row => {
-        // 只检查型号字段是否包含搜索词（不区分大小写）
-        const model = row['型号'] ? row['型号'].toString() : '';
-        
-        if (isPrecise) {
-            // 精准查询：必须完全匹配
-            return model.toLowerCase() === searchTerm.toLowerCase();
-        } else {
-            // 模糊查询：包含即可
-            return model.toLowerCase().includes(searchTerm.toLowerCase());
-        }
-    });
+
+    return data.filter(row => matchesModelQuery(row, searchTerm, isPrecise));
 };
 
 /**

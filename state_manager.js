@@ -1,3 +1,5 @@
+import { isSameCompareItem } from './data_utils.js';
+
 /**
  * Centralized State Management
  * Follows a simple pub/sub pattern for reactivity.
@@ -90,8 +92,8 @@ export const resetState = () => {
 
 // 添加到对比项的函数
 export const addToCompare = (item) => {
-    const existingIndex = state.compareItems.findIndex(compareItem => 
-        compareItem['型号'] === item['型号'] && compareItem['批次'] === item['批次']
+    const existingIndex = state.compareItems.findIndex(compareItem =>
+        isSameCompareItem(compareItem, item)
     );
     
     if (existingIndex === -1) {
@@ -102,8 +104,8 @@ export const addToCompare = (item) => {
 
 // 从对比项中移除的函数
 export const removeFromCompare = (item) => {
-    const filteredItems = state.compareItems.filter(compareItem => 
-        !(compareItem['型号'] === item['型号'] && compareItem['批次'] === item['批次'])
+    const filteredItems = state.compareItems.filter(compareItem =>
+        !isSameCompareItem(compareItem, item)
     );
     setState({ compareItems: filteredItems });
 };
