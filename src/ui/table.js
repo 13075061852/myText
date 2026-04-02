@@ -10,36 +10,22 @@ export const createTableController = ({
     addToCompare,
     removeFromCompare
 }) => {
+    const FIXED_HEADER_ROWS = 1;
+    const FIXED_LEADING_COLUMNS = 2;
     let lastRenderedDisplayMode = null;
     let renderTransitionTimeout = null;
 
     const updateStickyOffsets = () => {
-        const freezeColCount = getState().config.freezeCol || 0;
         const headerCells = Array.from(elements.thead.querySelectorAll('th'));
         const bodyRows = Array.from(elements.tbody.querySelectorAll('tr'));
 
-        if (freezeColCount <= 0 || headerCells.length === 0) {
-            headerCells.forEach((cell) => {
-                cell.style.left = '';
-                cell.style.minWidth = '';
-                cell.style.width = '';
-                cell.style.maxWidth = '';
-            });
-
-            bodyRows.forEach((row) => {
-                Array.from(row.children).forEach((cell) => {
-                    cell.style.left = '';
-                    cell.style.minWidth = '';
-                    cell.style.width = '';
-                    cell.style.maxWidth = '';
-                });
-            });
+        if (FIXED_LEADING_COLUMNS <= 0 || headerCells.length === 0) {
             return;
         }
 
         const columnWidths = [];
 
-        for (let colIndex = 0; colIndex < freezeColCount; colIndex += 1) {
+        for (let colIndex = 0; colIndex < FIXED_LEADING_COLUMNS; colIndex += 1) {
             let maxWidth = headerCells[colIndex]?.offsetWidth || 0;
 
             bodyRows.forEach((row) => {
@@ -54,7 +40,7 @@ export const createTableController = ({
 
         const accumulatedLeft = [];
         let runningLeft = 0;
-        for (let colIndex = 0; colIndex < freezeColCount; colIndex += 1) {
+        for (let colIndex = 0; colIndex < FIXED_LEADING_COLUMNS; colIndex += 1) {
             accumulatedLeft[colIndex] = runningLeft;
             runningLeft += columnWidths[colIndex];
         }
@@ -70,12 +56,12 @@ export const createTableController = ({
             cell.style.boxSizing = 'border-box';
         };
 
-        headerCells.slice(0, freezeColCount).forEach((cell, colIndex) => {
+        headerCells.slice(0, FIXED_LEADING_COLUMNS).forEach((cell, colIndex) => {
             syncCellPosition(cell, colIndex);
         });
 
         bodyRows.forEach((row) => {
-            for (let colIndex = 0; colIndex < freezeColCount; colIndex += 1) {
+            for (let colIndex = 0; colIndex < FIXED_LEADING_COLUMNS; colIndex += 1) {
                 syncCellPosition(row.children[colIndex], colIndex);
             }
         });
@@ -84,7 +70,7 @@ export const createTableController = ({
     const buildTable = ({ animateValues = false } = {}) => {
         const { processedData, pagination, config, compareItems } = getState();
         const { currentPage, pageSize } = pagination;
-        const { freezeRow, freezeCol, searchQuery, displayMode } = config;
+        const { searchQuery, displayMode } = config;
 
         elements.thead.innerHTML = '';
         elements.tbody.innerHTML = '';
@@ -102,8 +88,8 @@ export const createTableController = ({
         const headerTr = document.createElement('tr');
         headerRow.forEach((key, idx) => {
             const th = document.createElement('th');
-            th.className = `px-4 py-3 font-medium border-b border-border text-xs whitespace-nowrap ${idx < freezeCol ? 'sticky-col' : ''} ${idx < freezeCol ? 'z-30' : ''}`;
-            if (freezeRow > 0) {
+            th.className = `px-4 py-3 font-medium border-b border-border text-xs whitespace-nowrap ${idx < FIXED_LEADING_COLUMNS ? 'sticky-col z-30' : ''}`;
+            if (FIXED_HEADER_ROWS > 0) {
                 th.classList.add('sticky-header');
             }
             th.textContent = key || '';
@@ -134,7 +120,7 @@ export const createTableController = ({
 
             headerRow.forEach((key, idx) => {
                 const td = document.createElement('td');
-                td.className = `px-4 py-2 border-b border-border whitespace-nowrap truncate max-w-[300px] ${idx < freezeCol ? 'sticky-col' : ''}`;
+                td.className = `px-4 py-2 border-b border-border whitespace-nowrap truncate max-w-[300px] ${idx < FIXED_LEADING_COLUMNS ? 'sticky-col' : ''}`;
                 const renderedValue = formatValueForDisplay(row[key], {
                     displayMode,
                     searchTerm: searchQuery,

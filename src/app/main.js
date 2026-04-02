@@ -15,8 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const fileInput = document.getElementById('file-upload');
     const searchInput = document.getElementById('search-input');
-    const freezeRowInput = document.getElementById('freeze-row');
-    const freezeColInput = document.getElementById('freeze-col');
     const prevBtn = document.getElementById('prev-page');
     const nextBtn = document.getElementById('next-page');
     const exportBtn = document.getElementById('export-json');
@@ -54,14 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         processActiveSheet();
-    });
-
-    freezeRowInput.addEventListener('change', (event) => {
-        setState({ config: { freezeRow: Number.parseInt(event.target.value, 10) || 0 } });
-    });
-
-    freezeColInput.addEventListener('change', (event) => {
-        setState({ config: { freezeCol: Number.parseInt(event.target.value, 10) || 0 } });
     });
 
     prevBtn.addEventListener('click', () => {

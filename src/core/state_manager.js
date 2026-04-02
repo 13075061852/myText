@@ -19,8 +19,6 @@ const state = {
         totalItems: 0
     },
     config: {
-        freezeRow: 1,
-        freezeCol: 2,
         searchQuery: '',
         isPreciseSearch: false,
         displayMode: 'all'
@@ -80,8 +78,6 @@ export const resetState = () => {
     state.config.searchQuery = '';
     state.config.isPreciseSearch = false;
     state.config.displayMode = 'all';
-    state.config.freezeRow = 1;
-    state.config.freezeCol = 2;
     notify('state:reset');
 };
 

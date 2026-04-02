@@ -252,40 +252,6 @@ export const initUI = () => {
             }
         }
     });
-    
-    // Keep desktop and mobile freeze controls in sync.
-    const freezeRowInput = document.getElementById('freeze-row');
-    const freezeColInput = document.getElementById('freeze-col');
-    const freezeRowMobileInput = document.getElementById('freeze-row-mobile');
-    const freezeColMobileInput = document.getElementById('freeze-col-mobile');
-
-    const syncFreezeValues = () => {
-        const { config } = getState();
-        freezeRowInput.value = config.freezeRow;
-        freezeColInput.value = config.freezeCol;
-        if (freezeRowMobileInput) {
-            freezeRowMobileInput.value = config.freezeRow;
-        }
-        if (freezeColMobileInput) {
-            freezeColMobileInput.value = config.freezeCol;
-        }
-    };
-
-    const updateFreezeState = (key, value) => {
-        setState({ config: { ...getState().config, [key]: value } });
-        syncFreezeValues();
-    };
-
-    freezeRowInput.addEventListener('change', (e) => updateFreezeState('freezeRow', Number.parseInt(e.target.value, 10) || 0));
-    freezeColInput.addEventListener('change', (e) => updateFreezeState('freezeCol', Number.parseInt(e.target.value, 10) || 0));
-    if (freezeRowMobileInput) {
-        freezeRowMobileInput.addEventListener('change', (e) => updateFreezeState('freezeRow', Number.parseInt(e.target.value, 10) || 0));
-    }
-    if (freezeColMobileInput) {
-        freezeColMobileInput.addEventListener('change', (e) => updateFreezeState('freezeCol', Number.parseInt(e.target.value, 10) || 0));
-    }
-
-    syncFreezeValues();
     updateModeButtons();
     updateSearchModeButton();
     updateMobileSelectionSummary();
@@ -403,9 +369,6 @@ const renderReset = () => {
         elements.compareCount.textContent = UI_TEXT.common.emptyCompareCount;
         elements.compareCount.classList.add('hidden');
     }
-
-    document.getElementById('freeze-row').value = 1;
-    document.getElementById('freeze-col').value = 2;
 
     updateSearchModeButton();
     updateMobileSelectionSummary();

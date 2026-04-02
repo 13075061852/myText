@@ -18,47 +18,103 @@
 }
 
 @media (min-width: 1024px) {
+    .top-toolbar {
+        --desktop-search-input-min: 150px;
+        --desktop-search-button-width: 8.5rem;
+        --desktop-search-gap: 0.75rem;
+    }
+
     .app-shell {
         align-items: stretch;
+    }
+
+    .top-toolbar > div {
+        min-width: 0;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
     }
 
     .top-toolbar > div > div:first-child {
         display: none;
     }
+
+    .top-toolbar .search-row {
+        width: auto !important;
+        margin-top: 0;
+        min-width: calc(var(--desktop-search-input-min) + var(--desktop-search-button-width) + var(--desktop-search-gap));
+        flex: 1 1 calc(var(--desktop-search-input-min) + var(--desktop-search-button-width) + var(--desktop-search-gap));
+    }
+
+    .top-toolbar .search-shell {
+        width: auto;
+        flex: 1 1 0;
+        min-width: var(--desktop-search-input-min);
+    }
+
+    .top-toolbar #search-input {
+        min-width: 0;
+    }
+
+    .top-toolbar #search-mode-btn {
+        flex: 0 0 auto;
+        min-width: var(--desktop-search-button-width);
+    }
+
+    .top-toolbar .toolbar-actions {
+        flex: 0 0 auto;
+        min-width: 0;
+        margin-left: auto;
+        flex-wrap: nowrap;
+    }
 }
 
-@media (min-width: 1024px) and (max-width: 1480px) {
+@media (min-width: 1024px) and (max-width: 1220px) {
     .top-toolbar {
         padding-inline: 1rem;
     }
 
     .top-toolbar > div {
         display: grid;
-        grid-template-columns: minmax(19rem, 1.15fr) minmax(0, 1fr);
-        align-items: start;
-        gap: 0.8rem 1rem;
+        grid-template-columns: minmax(0, 1fr);
+        align-items: stretch;
+        gap: 0.8rem;
     }
 
     .top-toolbar > div > div:first-child {
         display: none;
     }
 
-    .search-shell {
+    .top-toolbar .search-row {
         grid-column: 1;
+        width: 100%;
         margin-top: 0;
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .search-shell {
         min-width: 0;
         width: 100%;
     }
 
     .toolbar-actions {
-        grid-column: 2;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: flex-end;
+        grid-column: 1;
+        place-self: start stretch;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        justify-self: start;
+        justify-content: stretch;
         align-items: center;
-        align-content: flex-start;
         gap: 0.6rem 0.7rem;
         min-width: 0;
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0;
+        overflow: visible;
+        padding-bottom: 0;
     }
 
     .toolbar-actions > .h-6.w-px {
@@ -66,36 +122,31 @@
     }
 
     .toolbar-actions button {
+        width: 100%;
         white-space: nowrap;
         padding-inline: 0.8rem;
     }
 
-    .toolbar-display-mode,
-    .toolbar-freeze-controls {
-        gap: 0.45rem;
-        flex-wrap: wrap;
+    .toolbar-display-mode {
+        width: 100%;
     }
 
-    #freeze-row,
-    #freeze-col {
-        width: 2.75rem;
+    .toolbar-display-mode,
+    .toolbar-display-mode .display-mode-group {
+        display: flex;
+    }
+
+    .toolbar-display-mode .display-mode-group {
+        width: 100%;
+    }
+
+    .toolbar-display-mode .display-mode-group > button {
+        min-width: 0;
+        width: 50%;
     }
 }
 
-@media (min-width: 1024px) and (max-width: 1220px) {
-    .top-toolbar > div {
-        grid-template-columns: 1fr;
-    }
-
-    .search-shell,
-    .toolbar-actions {
-        grid-column: 1;
-    }
-
-    .toolbar-actions {
-        justify-content: flex-start;
-    }
-
+@media (min-width: 1024px) and (max-width: 1120px) {
     .toolbar-display-mode {
         margin-left: 0;
     }

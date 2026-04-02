@@ -16,16 +16,6 @@ export const UI_TEXT = {
         average: '平均值',
         all: '参数'
     },
-    drawer: {
-        quickActions: '快捷操作',
-        displaySettings: '显示设置',
-        freezeSettings: '表格冻结',
-        displayModeLabel: '表格显示方式',
-        freezeRowTitle: '冻结行',
-        freezeRowDescription: '表头保持在顶部',
-        freezeColTitle: '冻结列',
-        freezeColDescription: '左侧关键列始终可见'
-    },
     actions: {
         selectAll: '全选',
         clear: '清空',
