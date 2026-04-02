@@ -151,11 +151,7 @@ export const createTableController = ({
         const totalPages = Math.ceil(pagination.totalItems / pagination.pageSize) || 1;
         const start = (pagination.currentPage - 1) * pagination.pageSize + 1;
         const end = Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems);
-        const isMobileViewport = window.innerWidth <= 768;
-
-        elements.pageIndicator.textContent = pagination.totalItems > 0
-            ? (isMobileViewport ? `${start}-${end} / ${pagination.totalItems}` : `${pagination.currentPage} / ${totalPages}`)
-            : (isMobileViewport ? '0 / 0' : `${pagination.currentPage} / ${totalPages}`);
+        elements.pageIndicator.textContent = `${pagination.currentPage} / ${totalPages}`;
 
         elements.prevBtn.disabled = pagination.currentPage <= 1;
         elements.nextBtn.disabled = pagination.currentPage >= totalPages;

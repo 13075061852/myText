@@ -48,6 +48,8 @@ body.app-body #compare-dialog > .compare-panel > .compare-dialog-header {
 #compare-dialog-content {
     display: flex;
     flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
     gap: 0.9rem;
     background: var(--background);
     padding: 0 !important;
@@ -65,14 +67,15 @@ body.app-body #compare-dialog > .compare-panel > .compare-dialog-header {
 }
 
 .compare-table-container {
+    flex: 1 1 auto;
     border: 1px solid rgba(148, 163, 184, 0.18);
     background: var(--background);
     box-sizing: border-box;
     overflow-x: auto !important;
     overflow-y: auto !important;
     padding-right: 0 !important;
-    max-height: calc(70vh - 150px);
-    min-height: 300px;
+    max-height: none;
+    min-height: 240px;
 }
 
 #compare-dialog-content table {
@@ -80,6 +83,8 @@ body.app-body #compare-dialog > .compare-panel > .compare-dialog-header {
     border: 0;
     width: max-content;
     min-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 #compare-dialog-content thead th {
@@ -87,17 +92,22 @@ body.app-body #compare-dialog > .compare-panel > .compare-dialog-header {
     top: 0;
     z-index: 8;
     background: var(--background);
+    box-shadow: inset 0 -1px 0 rgba(148, 163, 184, 0.18);
 }
 
 #compare-dialog-content th,
 #compare-dialog-content td {
-    padding: 0.8rem 0.9rem;
-    border-color: rgba(148, 163, 184, 0.16);
+    padding: 0.58rem 0.75rem;
+    border-right: 1px solid rgba(148, 163, 184, 0.18);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.16);
     text-align: center;
+    vertical-align: middle;
+    line-height: 1.35;
 }
 
 #compare-dialog-content th:last-child,
 #compare-dialog-content td:last-child {
+    border-right: 0;
     padding-right: 0.9rem;
 }
 
@@ -112,23 +122,28 @@ body.app-body #compare-dialog > .compare-panel > .compare-dialog-header {
     left: 0;
     z-index: 35;
     background-color: var(--background);
-    box-shadow: inset 0 0 0 1px var(--border);
+    box-shadow: inset -1px 0 0 rgba(148, 163, 184, 0.18);
     vertical-align: middle;
     text-align: center;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transform: translateX(-1px);
 }
 
 .compare-pagination {
+    position: sticky;
+    bottom: 0;
+    z-index: 12;
     border-top: 0;
-    padding-top: 0;
+    padding: 0.65rem 0.9rem 0.8rem;
     width: 100%;
     margin: 0;
     box-sizing: border-box;
+    background: var(--panel-bg);
+    backdrop-filter: blur(14px);
+    box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.14);
 }
 
 .compare-pagination-info {
@@ -180,8 +195,8 @@ body.app-body #compare-dialog > .compare-panel > .compare-dialog-header {
         overflow-x: auto !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
-        max-height: calc(100dvh - 15rem);
-        min-height: 12rem;
+        max-height: none;
+        min-height: 10rem;
     }
 
     #compare-dialog-content table {
@@ -193,5 +208,10 @@ body.app-body #compare-dialog > .compare-panel > .compare-dialog-header {
     #compare-dialog-content td {
         min-width: max-content !important;
         white-space: nowrap !important;
+        padding: 0.5rem 0.65rem;
+    }
+
+    .compare-pagination {
+        padding: 0.55rem 0.75rem calc(0.7rem + env(safe-area-inset-bottom));
     }
 }
