@@ -1,11 +1,18 @@
-import { getState, subscribe, setState, addToCompare, removeFromCompare, clearCompareItems } from './state_manager.js';
-import { processActiveSheet } from './excel_service.js';
-import {
-    getCompareItemKey
-} from './data_utils.js';
+﻿import { getState, subscribe, setState, addToCompare, removeFromCompare, clearCompareItems } from '../core/state_manager.js';
+import { processActiveSheet } from '../services/excel_service.js';
+import { getCompareItemKey } from '../shared/data_utils.js';
 import { createTableController } from './table.js';
 import { createCompareDialogController } from './compare-dialog.js';
 import { createSidebarController } from './sidebar.js';
+import { UI_TEXT } from './ui_strings.js';
+
+const EMPTY_SHEET_LIST_HTML = `<div class="text-xs text-muted-foreground text-center mt-10">${UI_TEXT.common.emptySheetList}</div>`;
+const MOBILE_QUICK_ACTIONS = [
+    { id: 'select-all-btn', icon: 'check-square', label: UI_TEXT.actions.selectAll },
+    { id: 'clear-selection-btn', icon: 'square', label: UI_TEXT.actions.clear },
+    { id: 'compare-toggle', icon: 'bar-chart-3', label: UI_TEXT.actions.compare },
+    { id: 'export-json', icon: 'download', label: UI_TEXT.actions.exportJson }
+];
 
 const elements = {
     sheetList: document.getElementById('sheet-list'),
@@ -22,10 +29,6 @@ const elements = {
     container: document.getElementById('table-container'),
     searchInput: document.getElementById('search-input'),
     mobileTopTitle: document.getElementById('mobile-top-title'),
-    mobileActiveSheet: document.getElementById('mobile-active-sheet'),
-    mobileResultCount: document.getElementById('mobile-result-count'),
-    mobileCompareTotal: document.getElementById('mobile-compare-total'),
-    mobileSearchMode: document.getElementById('mobile-search-mode'),
     mobileSelectionBar: document.getElementById('mobile-selection-bar'),
     mobileSelectionSummary: document.getElementById('mobile-selection-summary'),
     mobileFooterSelectionCount: document.getElementById('mobile-footer-selection-count'),
@@ -33,7 +36,7 @@ const elements = {
     mobileOpenCompareBtn: document.getElementById('mobile-open-compare-btn'),
     mobileToggleModeBtn: document.getElementById('mobile-toggle-mode-btn'),
     mobileClearSelectionBtn: document.getElementById('mobile-clear-selection-btn'),
-    // 对比项显示元素
+    compareSection: document.getElementById('compare-section'),
     compareItemsContainer: document.getElementById('compare-items-container'),
     compareItemsPlaceholder: document.getElementById('compare-items-placeholder'),
     compareCount: document.getElementById('compare-count')
@@ -49,6 +52,15 @@ const closeMobileSidebar = () => {
         sidebar.classList.add('-translate-x-full');
         sidebarBackdrop.classList.add('hidden');
     }
+};
+
+const setDisplayMode = (displayMode) => {
+    setState({
+        config: {
+            ...getState().config,
+            displayMode
+        }
+    });
 };
 
 export const initUI = () => {
@@ -79,12 +91,12 @@ export const initUI = () => {
         sidebarBackdrop.addEventListener('click', toggleSidebar);
     }
 
-    // 移动端侧边栏滑动手势支持
+    // Enable swipe gestures for the mobile sidebar and action drawer.
     let touchStartX = 0;
     let touchEndX = 0;
     const minSwipeDistance = 50;
 
-    // 从左侧边缘滑动打开侧边栏
+    // Capture the initial touch point.
     document.addEventListener('touchstart', (e) => {
         touchStartX = e.changedTouches[0].screenX;
     }, { passive: true });
@@ -100,13 +112,13 @@ export const initUI = () => {
         const isSidebarOpen = !sidebar.classList.contains('-translate-x-full');
         const isActionsDrawerOpen = actionsMenu && !actionsMenu.classList.contains('hidden');
 
-        // 从左侧边缘向右滑动打开侧边栏（只在侧边栏关闭时）
+        // Open the sidebar when swiping in from the left edge.
         if (swipeDistance > minSwipeDistance && touchStartX < 30 && !isSidebarOpen) {
             sidebar.classList.remove('-translate-x-full');
             sidebarBackdrop.classList.remove('hidden');
         }
 
-        // 从侧边栏内向左滑动关闭侧边栏
+        // Close the sidebar when swiping left inside it.
         if (swipeDistance < -minSwipeDistance && isSidebarOpen) {
             sidebar.classList.add('-translate-x-full');
             sidebarBackdrop.classList.add('hidden');
@@ -147,19 +159,12 @@ export const initUI = () => {
         }, 280);
     };
 
-    // Mobile actions drawer logic
+    // Build and wire the mobile actions drawer.
 
     if (actionsMenuToggle && actionsMenu) {
-        const actions = [
-            { id: 'select-all-btn', icon: 'check-square', label: '全选' },
-            { id: 'clear-selection-btn', icon: 'square', label: '清空' },
-            { id: 'compare-toggle', icon: 'bar-chart-3', label: '对比' },
-            { id: 'export-json', icon: 'download', label: '导出JSON' }
-        ];
-
         const actionsHTML = `
             <div class="quick-actions-grid">
-                ${actions.map(action => `
+                ${MOBILE_QUICK_ACTIONS.map(action => `
                     <button data-action-id="${action.id}" class="quick-action-tile text-sm text-foreground">
                         <i data-lucide="${action.icon}" class="w-4 h-4 text-muted-foreground"></i>
                         <span>${action.label}</span>
@@ -173,32 +178,32 @@ export const initUI = () => {
                 <div class="drawer-body">
                     <section class="drawer-section">
                         <div class="drawer-section__header">
-                            <div class="drawer-section__title">快捷操作</div>
+                            <div class="drawer-section__title">${UI_TEXT.drawer.quickActions}</div>
                         </div>
                         ${actionsHTML}
                     </section>
                     <section class="drawer-section">
                         <div class="drawer-section__header">
-                            <div class="drawer-section__title">显示设置</div>
+                            <div class="drawer-section__title">${UI_TEXT.drawer.displaySettings}</div>
                         </div>
                         <div class="drawer-mode-card">
-                            <div class="drawer-mode-card__label">表格显示方式</div>
+                            <div class="drawer-mode-card__label">${UI_TEXT.drawer.displayModeLabel}</div>
                             <div class="drawer-segmented-control">
                                 <span class="drawer-segmented-control__slider" aria-hidden="true"></span>
-                                <button id="mode-average-mobile" class="drawer-segmented-control__item transition-colors">平均值</button>
-                                <button id="mode-all-mobile" class="drawer-segmented-control__item transition-colors">参数</button>
+                                <button id="mode-average-mobile" class="drawer-segmented-control__item transition-colors">${UI_TEXT.displayMode.average}</button>
+                                <button id="mode-all-mobile" class="drawer-segmented-control__item transition-colors">${UI_TEXT.displayMode.all}</button>
                             </div>
                         </div>
                     </section>
                     <section class="drawer-section">
                         <div class="drawer-section__header">
-                            <div class="drawer-section__title">表格冻结</div>
+                            <div class="drawer-section__title">${UI_TEXT.drawer.freezeSettings}</div>
                         </div>
                         <div class="drawer-settings-card">
                             <label for="freeze-row-mobile" class="drawer-setting-row">
                                 <span class="drawer-setting-row__text">
-                                    <span class="drawer-setting-row__title">冻结行</span>
-                                    <span class="drawer-setting-row__desc">表头保持在顶部</span>
+                                    <span class="drawer-setting-row__title">${UI_TEXT.drawer.freezeRowTitle}</span>
+                                    <span class="drawer-setting-row__desc">${UI_TEXT.drawer.freezeRowDescription}</span>
                                 </span>
                                 <span class="drawer-setting-row__control">
                                     <i data-lucide="snowflake" class="w-4 h-4"></i>
@@ -207,8 +212,8 @@ export const initUI = () => {
                             </label>
                             <label for="freeze-col-mobile" class="drawer-setting-row">
                                 <span class="drawer-setting-row__text">
-                                    <span class="drawer-setting-row__title">冻结列</span>
-                                    <span class="drawer-setting-row__desc">左侧关键列始终可见</span>
+                                    <span class="drawer-setting-row__title">${UI_TEXT.drawer.freezeColTitle}</span>
+                                    <span class="drawer-setting-row__desc">${UI_TEXT.drawer.freezeColDescription}</span>
                                 </span>
                                 <span class="drawer-setting-row__control">
                                     <i data-lucide="snowflake" class="w-4 h-4"></i>
@@ -230,7 +235,7 @@ export const initUI = () => {
                 return;
             }
 
-            // Handle main actions with data-action-id
+            // Route shortcut tiles to their desktop button counterparts.
             if (button.dataset.actionId) {
                 const originalButton = document.getElementById(button.dataset.actionId);
                 if (originalButton) {
@@ -240,13 +245,13 @@ export const initUI = () => {
                 return;
             }
 
-            // Handle display mode buttons
+            // Switch the display mode from inside the mobile drawer.
             if (e.target.id === 'mode-average-mobile') {
-                setState({ config: { ...getState().config, displayMode: 'average' } });
+                setDisplayMode('average');
                 closeActionsDrawer();
             }
             if (e.target.id === 'mode-all-mobile') {
-                setState({ config: { ...getState().config, displayMode: 'all' } });
+                setDisplayMode('all');
                 closeActionsDrawer();
             }
         });
@@ -264,7 +269,7 @@ export const initUI = () => {
             actionsDrawerBackdrop.addEventListener('click', closeActionsDrawer);
         }
 
-        // Close drawer when clicking outside
+        // Close the drawer when clicking outside of it.
         window.addEventListener('click', (e) => {
             if (!actionsMenu.classList.contains('hidden') && !actionsMenu.contains(e.target) && !actionsMenuToggle.contains(e.target)) {
                 closeActionsDrawer();
@@ -277,9 +282,6 @@ export const initUI = () => {
     
 
     
-    // 注意：对比按钮已在HTML中定义，不需要再动态创建
-    
-    // 绑定事件
     searchModeBtn.addEventListener('click', toggleSearchMode);
 
     if (elements.mobileSelectAllBtn) {
@@ -309,19 +311,17 @@ export const initUI = () => {
     }
     
     document.getElementById('mode-average').addEventListener('click', () => {
-        setState({ config: { ...getState().config, displayMode: 'average' } });
+        setDisplayMode('average');
     });
     
     document.getElementById('mode-all').addEventListener('click', () => {
-        setState({ config: { ...getState().config, displayMode: 'all' } });
+        setDisplayMode('all');
     });
     
-    // 绑定数据对比功能事件（使用HTML中定义的按钮）
     document.getElementById('compare-toggle').addEventListener('click', () => {
         compareDialogController.showCompareDialog();
     });
     
-    // 绑定一键操作按钮事件
     document.getElementById('select-all-btn').addEventListener('click', () => {
         selectAllFilteredItems();
     });
@@ -337,7 +337,7 @@ export const initUI = () => {
         tableController.updatePaginationControls();
         updateModeButtons();
         updateSearchModeButton();
-        updateMobileOverview();
+        updateMobileSelectionSummary();
     };
 
     const sidebarController = createSidebarController({
@@ -346,7 +346,7 @@ export const initUI = () => {
         setState,
         removeFromCompare,
         closeMobileSidebar,
-        onOverviewChange: updateMobileOverview
+        onOverviewChange: updateMobileSelectionSummary
     });
 
     const compareDialogController = createCompareDialogController({
@@ -372,7 +372,7 @@ export const initUI = () => {
 
             if (isSearchOnlyUpdate) {
                 updateSearchModeButton();
-                updateMobileOverview();
+                updateMobileSelectionSummary();
             } else {
                 renderPrimaryView();
             }
@@ -402,7 +402,7 @@ export const initUI = () => {
         }
     });
     
-    // Freeze controls synchronization
+    // Keep desktop and mobile freeze controls in sync.
     const freezeRowInput = document.getElementById('freeze-row');
     const freezeColInput = document.getElementById('freeze-col');
     const freezeRowMobileInput = document.getElementById('freeze-row-mobile');
@@ -421,22 +421,15 @@ export const initUI = () => {
         syncFreezeValues();
     };
 
-    freezeRowInput.addEventListener('change', (e) => updateFreezeState('freezeRow', parseInt(e.target.value) || 0));
-    freezeColInput.addEventListener('change', (e) => updateFreezeState('freezeCol', parseInt(e.target.value) || 0));
-    freezeRowMobileInput.addEventListener('change', (e) => updateFreezeState('freezeRow', parseInt(e.target.value) || 0));
-    freezeColMobileInput.addEventListener('change', (e) => updateFreezeState('freezeCol', parseInt(e.target.value) || 0));
+    freezeRowInput.addEventListener('change', (e) => updateFreezeState('freezeRow', Number.parseInt(e.target.value, 10) || 0));
+    freezeColInput.addEventListener('change', (e) => updateFreezeState('freezeCol', Number.parseInt(e.target.value, 10) || 0));
+    freezeRowMobileInput.addEventListener('change', (e) => updateFreezeState('freezeRow', Number.parseInt(e.target.value, 10) || 0));
+    freezeColMobileInput.addEventListener('change', (e) => updateFreezeState('freezeCol', Number.parseInt(e.target.value, 10) || 0));
 
-    // Initial sync
     syncFreezeValues();
-    
-    // 初始化显示模式按钮状态
     updateModeButtons();
-    
-    // 初始化搜索模式按钮状态
     updateSearchModeButton();
-    updateMobileOverview();
-    
-    // 初始化Lucide图标
+    updateMobileSelectionSummary();
     lucide.createIcons();
 };
 
@@ -451,7 +444,7 @@ const toggleSearchMode = () => {
         } 
     });
     
-    // 如果有搜索词，则重新处理数据
+    // Re-process the active sheet when a search term is present.
     if (config.searchQuery) {
         processActiveSheet();
     }
@@ -462,47 +455,28 @@ const updateSearchModeButton = () => {
     const searchModeBtn = document.getElementById('search-mode-btn');
     
     if (isPreciseSearch) {
-        searchModeBtn.innerHTML = '<i data-lucide="target" class="w-4 h-4 mr-1"></i>精准查询';
+        searchModeBtn.innerHTML = `<i data-lucide="target" class="w-4 h-4 mr-1"></i>${UI_TEXT.search.precise}`;
     } else {
-        searchModeBtn.innerHTML = '<i data-lucide="search" class="w-4 h-4 mr-1"></i>模糊查询';
+        searchModeBtn.innerHTML = `<i data-lucide="search" class="w-4 h-4 mr-1"></i>${UI_TEXT.search.fuzzy}`;
     }
     
     lucide.createIcons();
 };
 
-const updateMobileOverview = () => {
-    const { activeSheetName, processedData, compareItems, config, file } = getState();
-    const currentSheetLabel = activeSheetName || (file ? '请选择工作表' : '未选择数据');
-    const resultCount = String(processedData.length || 0);
-    const compareCount = String(compareItems.length || 0);
-    const searchModeLabel = config.isPreciseSearch ? '精确' : '模糊';
-
-    if (elements.mobileActiveSheet) {
-        elements.mobileActiveSheet.textContent = currentSheetLabel;
-    }
+const updateMobileSelectionSummary = () => {
+    const { activeSheetName, processedData, compareItems, file } = getState();
+    const currentSheetLabel = activeSheetName || (file ? UI_TEXT.sheet.selectPrompt : UI_TEXT.sheet.noSelection);
 
     if (elements.mobileTopTitle) {
         elements.mobileTopTitle.textContent = currentSheetLabel;
     }
 
-    if (elements.mobileResultCount) {
-        elements.mobileResultCount.textContent = resultCount;
-    }
-
-    if (elements.mobileCompareTotal) {
-        elements.mobileCompareTotal.textContent = compareCount;
-    }
-
-    if (elements.mobileSearchMode) {
-        elements.mobileSearchMode.textContent = searchModeLabel;
-    }
-
     if (elements.mobileSelectionSummary) {
-        elements.mobileSelectionSummary.textContent = `已选 ${compareItems.length} 项`;
+        elements.mobileSelectionSummary.textContent = UI_TEXT.selection.summary(compareItems.length);
     }
 
     if (elements.mobileFooterSelectionCount) {
-        elements.mobileFooterSelectionCount.textContent = `已选 ${compareItems.length} 项`;
+        elements.mobileFooterSelectionCount.textContent = UI_TEXT.selection.summary(compareItems.length);
     }
 
     if (elements.mobileSelectionBar) {
@@ -543,7 +517,7 @@ const updateModeButtons = () => {
     const mobileToggleModeBtn = elements.mobileToggleModeBtn;
     if (mobileToggleModeBtn) {
         const isAverage = displayMode === 'average';
-        mobileToggleModeBtn.querySelector('span').textContent = isAverage ? '平均值' : '参数';
+        mobileToggleModeBtn.querySelector('span').textContent = isAverage ? UI_TEXT.displayMode.average : UI_TEXT.displayMode.all;
         const icon = mobileToggleModeBtn.querySelector('i');
         if (icon) {
             icon.setAttribute('data-lucide', isAverage ? 'toggle-right' : 'toggle-left');
@@ -555,74 +529,73 @@ const updateModeButtons = () => {
 };
 
 const renderReset = () => {
-    elements.sheetList.innerHTML = '<div class="text-xs text-muted-foreground text-center mt-10">暂无数据<br>请上传文件</div>';
+    elements.sheetList.innerHTML = EMPTY_SHEET_LIST_HTML;
     elements.thead.innerHTML = '';
     elements.tbody.innerHTML = '';
     elements.emptyState.classList.remove('hidden');
     elements.table.classList.add('hidden');
-    elements.fileName.textContent = '未选择文件';
+    elements.fileName.textContent = UI_TEXT.common.noSelectedFile;
     elements.resetBtn.classList.add('hidden');
-    elements.paginationInfo.textContent = '显示 0 - 0 条，共 0 条';
-    elements.pageIndicator.textContent = '1 / 1';
+    elements.paginationInfo.textContent = UI_TEXT.common.emptyPaginationInfo;
+    elements.pageIndicator.textContent = UI_TEXT.common.emptyPageIndicator;
+
     if (elements.compareItemsContainer && elements.compareItemsPlaceholder) {
         elements.compareItemsContainer.innerHTML = '';
         elements.compareItemsContainer.appendChild(elements.compareItemsPlaceholder);
         elements.compareItemsPlaceholder.style.display = 'block';
     }
-    if (elements.compareCount) {
-        elements.compareCount.textContent = '0';
+
+    if (elements.compareSection) {
+        elements.compareSection.classList.add('hidden');
     }
-    
-    // 重置侧边栏
-    elements.sheetList.innerHTML = '<div class="text-xs text-muted-foreground text-center mt-10">暂无数据<br>请上传文件</div>';
-    
-    // 重置冻结行和冻结列的值
+
+    if (elements.compareCount) {
+        elements.compareCount.textContent = UI_TEXT.common.emptyCompareCount;
+        elements.compareCount.classList.add('hidden');
+    }
+
     document.getElementById('freeze-row').value = 1;
     document.getElementById('freeze-col').value = 2;
-    
-    // 重置搜索模式按钮
+
     updateSearchModeButton();
     updateMobileOverview();
 };
 
 
-// 一键选择所有筛选结果
+// Add every currently filtered row into the compare list.
 const selectAllFilteredItems = () => {
     const { processedData, compareItems } = getState();
     
-    // 获取当前未被选择的项目
+    // Only add items that are not already present in the compare list.
     const existingCompareKeys = new Set(compareItems.map(getCompareItemKey));
     const unselectedItems = processedData.filter(item =>
         !existingCompareKeys.has(getCompareItemKey(item))
     );
     
     if (unselectedItems.length === 0) {
-        showToast('当前没有可添加的项目');
+        showToast(UI_TEXT.selection.nothingToAdd);
         return;
     }
     
-    // 批量添加所有未被选择的项目到对比项中
     const newCompareItems = [...compareItems, ...unselectedItems];
     setState({ compareItems: newCompareItems });
     
-    showToast(`已添加 ${unselectedItems.length} 个项目到对比项`);
+    showToast(UI_TEXT.selection.addedToCompare(unselectedItems.length));
 };
 
-// 一键清空所有选择
+// Clear every selected compare item.
 const clearAllSelections = () => {
     const { compareItems } = getState();
     
     if (compareItems.length === 0) {
-        showToast('当前没有选中的项目');
+        showToast(UI_TEXT.selection.nothingSelected);
         return;
     }
     
-    // 保存当前对比项的数量用于提示
     const count = compareItems.length;
     
-    // 清空所有对比项
     clearCompareItems();
-    showToast(`已清空 ${count} 个对比项`);
+    showToast(UI_TEXT.selection.clearedCompare(count));
 };
 
 export const showToast = (message, type = 'info') => {

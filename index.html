@@ -15,7 +15,12 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- SheetJS for Excel Parsing -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="src/styles/base.css">
+    <link rel="stylesheet" href="src/styles/workspace.css">
+    <link rel="stylesheet" href="src/styles/table.css">
+    <link rel="stylesheet" href="src/styles/compare-dialog.css">
+    <link rel="stylesheet" href="src/styles/desktop.css">
+    <link rel="stylesheet" href="src/styles/mobile.css">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -82,25 +87,27 @@
             </div>
 
             <!-- 对比项显示区域 -->
-            <div class="px-3 py-2 border-t border-border">
-                <label for="file-upload"
-                    class="sidebar-upload-trigger hidden lg:flex items-center justify-center w-full h-10 px-3 transition bg-primary text-primary-foreground rounded-lg shadow-sm cursor-pointer hover:opacity-90 focus:outline-none active:scale-95 text-sm mb-3">
-                    <i data-lucide="upload" class="w-4 h-4 mr-1.5"></i>
-                    <span class="font-medium">导入 Excel</span>
-                    <input id="file-upload" type="file" class="hidden" accept=".xlsx, .xls, .csv" />
-                </label>
-                <div class="flex items-center justify-between">
-                    <div class="text-xs font-medium text-muted-foreground">对比项</div>
-                    <span id="compare-count"
-                        class="text-xs bg-primary text-primary-foreground rounded-full px-2 py-0.5">0</span>
-                </div>
-                <div id="compare-items-container" class="space-y-1 max-h-48 overflow-y-auto mt-1">
-                    <div id="compare-items-placeholder" class="text-xs text-muted-foreground text-center py-4">
-                        无对比项
-                    </div>
-                    <!-- 对比项将在这里动态添加 -->
-                </div>
-            </div>
+             <div class="px-3 py-2">
+                 <label for="file-upload"
+                     class="sidebar-upload-trigger hidden lg:flex items-center justify-center w-full h-10 px-3 transition bg-primary text-primary-foreground rounded-lg shadow-sm cursor-pointer hover:opacity-90 focus:outline-none active:scale-95 text-sm mb-3">
+                     <i data-lucide="upload" class="w-4 h-4 mr-1.5"></i>
+                     <span class="font-medium">导入 Excel</span>
+                     <input id="file-upload" type="file" class="hidden" accept=".xlsx, .xls, .csv" />
+                 </label>
+                 <div id="compare-section" class="hidden">
+                     <div class="flex items-center justify-between">
+                         <div class="text-xs font-medium text-muted-foreground">对比项</div>
+                         <span id="compare-count"
+                             class="hidden text-xs bg-primary text-primary-foreground rounded-full px-2 py-0.5">0</span>
+                     </div>
+                     <div id="compare-items-container" class="space-y-1 max-h-48 overflow-y-auto mt-1">
+                         <div id="compare-items-placeholder" class="text-xs text-muted-foreground text-center py-4">
+                             无对比项
+                         </div>
+                         <!-- 对比项将在这里动态添加 -->
+                     </div>
+                 </div>
+             </div>
 
             <div class="p-3 border-t border-border text-xs text-muted-foreground">
                 <div class="flex justify-between items-center">
@@ -202,29 +209,6 @@
                 </div>
             </header>
 
-            <section id="mobile-overview" class="mobile-overview lg:hidden">
-                <div class="mobile-overview__hero">
-                    <div>
-                        <p class="mobile-overview__eyebrow">当前工作表</p>
-                        <h2 id="mobile-active-sheet" class="mobile-overview__title">未选择数据</h2>
-                    </div>
-                </div>
-                <div class="mobile-overview__stats">
-                    <div class="mobile-stat-card">
-                        <span class="mobile-stat-card__label">结果</span>
-                        <strong id="mobile-result-count" class="mobile-stat-card__value">0</strong>
-                    </div>
-                    <div class="mobile-stat-card">
-                        <span class="mobile-stat-card__label">已选对比</span>
-                        <strong id="mobile-compare-total" class="mobile-stat-card__value">0</strong>
-                    </div>
-                    <div class="mobile-stat-card">
-                        <span class="mobile-stat-card__label">搜索模式</span>
-                        <strong id="mobile-search-mode" class="mobile-stat-card__value">模糊</strong>
-                    </div>
-                </div>
-            </section>
-
             <!-- Data Viewport -->
             <div class="data-viewport flex-1 relative overflow-auto bg-muted/10 scroll-smooth" id="table-container">
                 <!-- Empty State / Drop Zone -->
@@ -270,11 +254,11 @@
 
             <!-- Pagination Footer -->
             <footer class="app-footer h-12 border-t border-border bg-background flex items-center justify-between px-6 z-20">
-                <div class="text-xs text-muted-foreground hidden sm:block" id="pagination-info">
+                <div class="text-xs text-muted-foreground" id="pagination-info">
                     显示 0 - 0 条，共 0 条
                 </div>
-                <div id="mobile-footer-selection-count" class="mobile-footer-selection-count lg:hidden">已选 0 项</div>
-                <div class="flex items-center gap-2">
+                <div class="footer-controls flex items-center gap-2">
+                    <div id="mobile-footer-selection-count" class="mobile-footer-selection-count">已选 0 项</div>
                     <button id="prev-page"
                         class="p-1 rounded-md hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
                         <i data-lucide="chevron-left" class="w-4 h-4"></i>
@@ -312,7 +296,7 @@
             <main id="compare-dialog-content" class="p-6 overflow-y-auto"></main>
         </div>
     </div>
-    <script type="module" src="main.js"></script>
+    <script type="module" src="src/app/main.js"></script>
 </body>
 
 </html>

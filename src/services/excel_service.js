@@ -1,4 +1,4 @@
-import { setState, getState } from './state_manager.js';
+import { getState, setState } from '../core/state_manager.js';
 import {
     DEFAULT_TEST_FILE_NAME,
     DEFAULT_TEST_FILE_PATH,
@@ -10,7 +10,7 @@ import {
     isSpecialMarkedValue,
     matchesModelQuery,
     parseNumericValue
-} from './data_utils.js';
+} from '../shared/data_utils.js';
 
 /**
  * 计算数组的平均值

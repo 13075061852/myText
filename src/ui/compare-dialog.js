@@ -3,7 +3,7 @@ import {
     MODEL_KEY,
     collectColumnKeys,
     formatValueForDisplay
-} from './data_utils.js';
+} from '../shared/data_utils.js';
 
 export const createCompareDialogController = ({
     getState,

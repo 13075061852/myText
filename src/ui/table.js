@@ -2,7 +2,7 @@ import {
     collectColumnKeys,
     formatValueForDisplay,
     isSameCompareItem
-} from './data_utils.js';
+} from '../shared/data_utils.js';
 
 export const createTableController = ({
     elements,

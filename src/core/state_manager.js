@@ -1,34 +1,29 @@
-import { isSameCompareItem } from './data_utils.js';
+import { isSameCompareItem } from '../shared/data_utils.js';
 
 /**
- * Centralized State Management
- * Follows a simple pub/sub pattern for reactivity.
+ * Centralized application state built on top of a small pub/sub layer.
  */
-
 const state = {
     file: null,
-    workbook: null,     // Raw SheetJS workbook
+    workbook: null,
     sheetNames: [],
     activeSheetName: null,
-    data: {},           // Map: sheetName -> Array of objects
-    processedData: [],  // Currently displayed data (after search/filter)
-    originalMergedData: {}, // 原始合并数据用于搜索
-    
-    // 数据对比相关状态
-    compareItems: [],   // 用于对比的数据项
-    isComparePanelOpen: false, // 对比面板是否打开
-    
+    data: {},
+    processedData: [],
+    originalMergedData: {},
+    compareItems: [],
+    isComparePanelOpen: false,
     pagination: {
         currentPage: 1,
         pageSize: 50,
         totalItems: 0
     },
     config: {
-        freezeRow: 1,   // 默认冻结行设为1
-        freezeCol: 2,   // 默认冻结列设为2
+        freezeRow: 1,
+        freezeCol: 2,
         searchQuery: '',
-        isPreciseSearch: false, // 是否为精准查询
-        displayMode: 'all' // 默认显示模式设为'all'(参数)，而不是'average'(平均值)
+        isPreciseSearch: false,
+        displayMode: 'all'
     }
 };
 
@@ -40,16 +35,15 @@ export const subscribe = (listener) => {
 };
 
 const notify = (event, payload) => {
-    listeners.forEach(l => l(event, payload, state));
+    listeners.forEach((listener) => listener(event, payload, state));
 };
 
 export const setState = (updates) => {
     let hasChanges = false;
-    let events = [];
+    const events = [];
 
     for (const [key, value] of Object.entries(updates)) {
         if (state[key] !== value) {
-
             if (key === 'config' && typeof value === 'object') {
                 state.config = { ...state.config, ...value };
                 events.push('config:updated');
@@ -60,12 +54,13 @@ export const setState = (updates) => {
                 state[key] = value;
                 events.push(`${key}:updated`);
             }
+
             hasChanges = true;
         }
     }
 
     if (hasChanges) {
-        events.forEach(e => notify(e, null));
+        events.forEach((event) => notify(event, null));
     }
 };
 
@@ -79,43 +74,38 @@ export const resetState = () => {
     state.data = {};
     state.processedData = [];
     state.originalMergedData = {};
-    state.compareItems = []; // 重置对比项
-    state.isComparePanelOpen = false; // 关闭对比面板
+    state.compareItems = [];
+    state.isComparePanelOpen = false;
     state.pagination = { currentPage: 1, pageSize: 50, totalItems: 0 };
     state.config.searchQuery = '';
     state.config.isPreciseSearch = false;
-    state.config.displayMode = 'all'; // 重置时也设为参数模式
-    state.config.freezeRow = 1; // 重置时设为默认值
-    state.config.freezeCol = 2; // 重置时设为默认值
+    state.config.displayMode = 'all';
+    state.config.freezeRow = 1;
+    state.config.freezeCol = 2;
     notify('state:reset');
 };
 
-// 添加到对比项的函数
 export const addToCompare = (item) => {
-    const existingIndex = state.compareItems.findIndex(compareItem =>
+    const existingIndex = state.compareItems.findIndex((compareItem) =>
         isSameCompareItem(compareItem, item)
     );
-    
+
     if (existingIndex === -1) {
-        // 如果不存在，则添加
         setState({ compareItems: [...state.compareItems, item] });
     }
 };
 
-// 从对比项中移除的函数
 export const removeFromCompare = (item) => {
-    const filteredItems = state.compareItems.filter(compareItem =>
+    const filteredItems = state.compareItems.filter((compareItem) =>
         !isSameCompareItem(compareItem, item)
     );
     setState({ compareItems: filteredItems });
 };
 
-// 清空对比项
 export const clearCompareItems = () => {
     setState({ compareItems: [] });
 };
 
-// 切换对比面板状态
 export const toggleComparePanel = () => {
     setState({ isComparePanelOpen: !state.isComparePanelOpen });
 };

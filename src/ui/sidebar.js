@@ -4,7 +4,7 @@ import {
     getCompareItemKey,
     isSameCompareItem,
     matchesModelQuery
-} from './data_utils.js';
+} from '../shared/data_utils.js';
 
 export const createSidebarController = ({
     elements,
@@ -68,8 +68,13 @@ export const createSidebarController = ({
 
         if (!elements.compareItemsContainer || !elements.compareItemsPlaceholder) return;
 
+        if (elements.compareSection) {
+            elements.compareSection.classList.toggle('hidden', compareItems.length === 0);
+        }
+
         if (elements.compareCount) {
             elements.compareCount.textContent = compareItems.length;
+            elements.compareCount.classList.toggle('hidden', compareItems.length === 0);
         }
 
         elements.compareItemsContainer.innerHTML = '';
