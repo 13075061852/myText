@@ -7,13 +7,6 @@ import { createSidebarController } from './sidebar.js';
 import { UI_TEXT } from './ui_strings.js';
 
 const EMPTY_SHEET_LIST_HTML = `<div class="text-xs text-muted-foreground text-center mt-10">${UI_TEXT.common.emptySheetList}</div>`;
-const MOBILE_QUICK_ACTIONS = [
-    { id: 'select-all-btn', icon: 'check-square', label: UI_TEXT.actions.selectAll },
-    { id: 'clear-selection-btn', icon: 'square', label: UI_TEXT.actions.clear },
-    { id: 'compare-toggle', icon: 'bar-chart-3', label: UI_TEXT.actions.compare },
-    { id: 'export-json', icon: 'download', label: UI_TEXT.actions.exportJson }
-];
-
 const elements = {
     sheetList: document.getElementById('sheet-list'),
     table: document.getElementById('data-table'),
@@ -67,10 +60,6 @@ export const initUI = () => {
     const menuToggle = document.getElementById('menu-toggle');
     const sidebar = document.getElementById('sidebar');
     const sidebarBackdrop = document.getElementById('sidebar-backdrop');
-    const actionsMenuToggle = document.getElementById('actions-menu-toggle');
-    const actionsMenu = document.getElementById('actions-menu');
-    const actionsDrawerBackdrop = document.getElementById('actions-drawer-backdrop');
-    const fileInput = document.getElementById('file-upload');
     const tableController = createTableController({
         elements,
         getState,
@@ -91,7 +80,7 @@ export const initUI = () => {
         sidebarBackdrop.addEventListener('click', toggleSidebar);
     }
 
-    // Enable swipe gestures for the mobile sidebar and action drawer.
+    // Enable swipe gestures for the mobile sidebar.
     let touchStartX = 0;
     let touchEndX = 0;
     const minSwipeDistance = 50;
@@ -110,7 +99,6 @@ export const initUI = () => {
         const swipeDistance = touchEndX - touchStartX;
         const sidebar = document.getElementById('sidebar');
         const isSidebarOpen = !sidebar.classList.contains('-translate-x-full');
-        const isActionsDrawerOpen = actionsMenu && !actionsMenu.classList.contains('hidden');
 
         // Open the sidebar when swiping in from the left edge.
         if (swipeDistance > minSwipeDistance && touchStartX < 30 && !isSidebarOpen) {
@@ -123,166 +111,13 @@ export const initUI = () => {
             sidebar.classList.add('-translate-x-full');
             sidebarBackdrop.classList.add('hidden');
         }
-
-        if (swipeDistance < -minSwipeDistance && touchStartX > window.innerWidth - 30 && !isActionsDrawerOpen) {
-            openActionsDrawer();
-        }
-
-        if (swipeDistance > minSwipeDistance && isActionsDrawerOpen) {
-            closeActionsDrawer();
-        }
     };
-
-    const openActionsDrawer = () => {
-        if (!actionsMenu || !actionsDrawerBackdrop) return;
-
-        actionsDrawerBackdrop.classList.remove('hidden');
-        actionsMenu.classList.remove('hidden');
-
-        requestAnimationFrame(() => {
-            actionsDrawerBackdrop.classList.add('is-open');
-            actionsMenu.classList.add('is-open');
-        });
-    };
-
-    const closeActionsDrawer = () => {
-        if (!actionsMenu || !actionsDrawerBackdrop || actionsMenu.classList.contains('hidden')) return;
-
-        actionsDrawerBackdrop.classList.remove('is-open');
-        actionsMenu.classList.remove('is-open');
-
-        window.setTimeout(() => {
-            if (!actionsMenu.classList.contains('is-open')) {
-                actionsDrawerBackdrop.classList.add('hidden');
-                actionsMenu.classList.add('hidden');
-            }
-        }, 280);
-    };
-
-    // Build and wire the mobile actions drawer.
-
-    if (actionsMenuToggle && actionsMenu) {
-        const actionsHTML = `
-            <div class="quick-actions-grid">
-                ${MOBILE_QUICK_ACTIONS.map(action => `
-                    <button data-action-id="${action.id}" class="quick-action-tile text-sm text-foreground">
-                        <i data-lucide="${action.icon}" class="w-4 h-4 text-muted-foreground"></i>
-                        <span>${action.label}</span>
-                    </button>
-                `).join('')}
-            </div>
-        `;
-
-        actionsMenu.innerHTML = `
-            <div class="flex h-full flex-col">
-                <div class="drawer-body">
-                    <section class="drawer-section">
-                        <div class="drawer-section__header">
-                            <div class="drawer-section__title">${UI_TEXT.drawer.quickActions}</div>
-                        </div>
-                        ${actionsHTML}
-                    </section>
-                    <section class="drawer-section">
-                        <div class="drawer-section__header">
-                            <div class="drawer-section__title">${UI_TEXT.drawer.displaySettings}</div>
-                        </div>
-                        <div class="drawer-mode-card">
-                            <div class="drawer-mode-card__label">${UI_TEXT.drawer.displayModeLabel}</div>
-                            <div class="drawer-segmented-control">
-                                <span class="drawer-segmented-control__slider" aria-hidden="true"></span>
-                                <button id="mode-average-mobile" class="drawer-segmented-control__item transition-colors">${UI_TEXT.displayMode.average}</button>
-                                <button id="mode-all-mobile" class="drawer-segmented-control__item transition-colors">${UI_TEXT.displayMode.all}</button>
-                            </div>
-                        </div>
-                    </section>
-                    <section class="drawer-section">
-                        <div class="drawer-section__header">
-                            <div class="drawer-section__title">${UI_TEXT.drawer.freezeSettings}</div>
-                        </div>
-                        <div class="drawer-settings-card">
-                            <label for="freeze-row-mobile" class="drawer-setting-row">
-                                <span class="drawer-setting-row__text">
-                                    <span class="drawer-setting-row__title">${UI_TEXT.drawer.freezeRowTitle}</span>
-                                    <span class="drawer-setting-row__desc">${UI_TEXT.drawer.freezeRowDescription}</span>
-                                </span>
-                                <span class="drawer-setting-row__control">
-                                    <i data-lucide="snowflake" class="w-4 h-4"></i>
-                                    <input type="number" id="freeze-row-mobile" min="0" max="10" class="drawer-number-input">
-                                </span>
-                            </label>
-                            <label for="freeze-col-mobile" class="drawer-setting-row">
-                                <span class="drawer-setting-row__text">
-                                    <span class="drawer-setting-row__title">${UI_TEXT.drawer.freezeColTitle}</span>
-                                    <span class="drawer-setting-row__desc">${UI_TEXT.drawer.freezeColDescription}</span>
-                                </span>
-                                <span class="drawer-setting-row__control">
-                                    <i data-lucide="snowflake" class="w-4 h-4"></i>
-                                    <input type="number" id="freeze-col-mobile" min="0" max="5" class="drawer-number-input">
-                                </span>
-                            </label>
-                        </div>
-                    </section>
-                </div>
-            </div>
-        `;
-
-        actionsMenu.addEventListener('click', (e) => {
-            const button = e.target.closest('button');
-            if (!button) return;
-
-            if (button.id === 'actions-drawer-close') {
-                closeActionsDrawer();
-                return;
-            }
-
-            // Route shortcut tiles to their desktop button counterparts.
-            if (button.dataset.actionId) {
-                const originalButton = document.getElementById(button.dataset.actionId);
-                if (originalButton) {
-                    originalButton.click();
-                }
-                closeActionsDrawer();
-                return;
-            }
-
-            // Switch the display mode from inside the mobile drawer.
-            if (e.target.id === 'mode-average-mobile') {
-                setDisplayMode('average');
-                closeActionsDrawer();
-            }
-            if (e.target.id === 'mode-all-mobile') {
-                setDisplayMode('all');
-                closeActionsDrawer();
-            }
-        });
-
-        actionsMenuToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (actionsMenu.classList.contains('hidden')) {
-                openActionsDrawer();
-            } else {
-                closeActionsDrawer();
-            }
-        });
-
-        if (actionsDrawerBackdrop) {
-            actionsDrawerBackdrop.addEventListener('click', closeActionsDrawer);
-        }
-
-        // Close the drawer when clicking outside of it.
-        window.addEventListener('click', (e) => {
-            if (!actionsMenu.classList.contains('hidden') && !actionsMenu.contains(e.target) && !actionsMenuToggle.contains(e.target)) {
-                closeActionsDrawer();
-            }
-        });
-    }
     lucide.createIcons();
     
     const searchModeBtn = document.getElementById('search-mode-btn');
-    
-
-    
-    searchModeBtn.addEventListener('click', toggleSearchMode);
+    if (searchModeBtn) {
+        searchModeBtn.addEventListener('click', toggleSearchMode);
+    }
 
     if (elements.mobileSelectAllBtn) {
         elements.mobileSelectAllBtn.addEventListener('click', () => {
@@ -310,25 +145,40 @@ export const initUI = () => {
         });
     }
     
-    document.getElementById('mode-average').addEventListener('click', () => {
-        setDisplayMode('average');
-    });
-    
-    document.getElementById('mode-all').addEventListener('click', () => {
-        setDisplayMode('all');
-    });
-    
-    document.getElementById('compare-toggle').addEventListener('click', () => {
-        compareDialogController.showCompareDialog();
-    });
-    
-    document.getElementById('select-all-btn').addEventListener('click', () => {
-        selectAllFilteredItems();
-    });
-    
-    document.getElementById('clear-selection-btn').addEventListener('click', () => {
-        clearAllSelections();
-    });
+    const modeAverageButton = document.getElementById('mode-average');
+    if (modeAverageButton) {
+        modeAverageButton.addEventListener('click', () => {
+            setDisplayMode('average');
+        });
+    }
+
+    const modeAllButton = document.getElementById('mode-all');
+    if (modeAllButton) {
+        modeAllButton.addEventListener('click', () => {
+            setDisplayMode('all');
+        });
+    }
+
+    const compareToggleButton = document.getElementById('compare-toggle');
+    if (compareToggleButton) {
+        compareToggleButton.addEventListener('click', () => {
+            compareDialogController.showCompareDialog();
+        });
+    }
+
+    const selectAllButton = document.getElementById('select-all-btn');
+    if (selectAllButton) {
+        selectAllButton.addEventListener('click', () => {
+            selectAllFilteredItems();
+        });
+    }
+
+    const clearSelectionButton = document.getElementById('clear-selection-btn');
+    if (clearSelectionButton) {
+        clearSelectionButton.addEventListener('click', () => {
+            clearAllSelections();
+        });
+    }
     
     let previousConfig = { ...getState().config };
 
@@ -412,8 +262,12 @@ export const initUI = () => {
         const { config } = getState();
         freezeRowInput.value = config.freezeRow;
         freezeColInput.value = config.freezeCol;
-        freezeRowMobileInput.value = config.freezeRow;
-        freezeColMobileInput.value = config.freezeCol;
+        if (freezeRowMobileInput) {
+            freezeRowMobileInput.value = config.freezeRow;
+        }
+        if (freezeColMobileInput) {
+            freezeColMobileInput.value = config.freezeCol;
+        }
     };
 
     const updateFreezeState = (key, value) => {
@@ -423,8 +277,12 @@ export const initUI = () => {
 
     freezeRowInput.addEventListener('change', (e) => updateFreezeState('freezeRow', Number.parseInt(e.target.value, 10) || 0));
     freezeColInput.addEventListener('change', (e) => updateFreezeState('freezeCol', Number.parseInt(e.target.value, 10) || 0));
-    freezeRowMobileInput.addEventListener('change', (e) => updateFreezeState('freezeRow', Number.parseInt(e.target.value, 10) || 0));
-    freezeColMobileInput.addEventListener('change', (e) => updateFreezeState('freezeCol', Number.parseInt(e.target.value, 10) || 0));
+    if (freezeRowMobileInput) {
+        freezeRowMobileInput.addEventListener('change', (e) => updateFreezeState('freezeRow', Number.parseInt(e.target.value, 10) || 0));
+    }
+    if (freezeColMobileInput) {
+        freezeColMobileInput.addEventListener('change', (e) => updateFreezeState('freezeCol', Number.parseInt(e.target.value, 10) || 0));
+    }
 
     syncFreezeValues();
     updateModeButtons();
@@ -502,18 +360,6 @@ const updateModeButtons = () => {
         }
     }
 
-    // Mobile buttons
-    const modeAverageMobile = document.getElementById('mode-average-mobile');
-    const modeAllMobile = document.getElementById('mode-all-mobile');
-    if(modeAverageMobile && modeAllMobile) {
-        modeAverageMobile.className = `drawer-segmented-control__item transition-colors ${displayMode === 'average' ? activeClass : inactiveClass}`;
-        modeAllMobile.className = `drawer-segmented-control__item transition-colors ${displayMode === 'all' ? activeClass : inactiveClass}`;
-        const mobileGroup = modeAverageMobile.parentElement;
-        if (mobileGroup) {
-            mobileGroup.dataset.activeMode = displayMode;
-        }
-    }
-
     const mobileToggleModeBtn = elements.mobileToggleModeBtn;
     if (mobileToggleModeBtn) {
         const isAverage = displayMode === 'average';
@@ -558,7 +404,7 @@ const renderReset = () => {
     document.getElementById('freeze-col').value = 2;
 
     updateSearchModeButton();
-    updateMobileOverview();
+    updateMobileSelectionSummary();
 };
 
 

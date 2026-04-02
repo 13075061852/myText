@@ -18,13 +18,6 @@
         --mobile-table-cell-padding-y: 0.72rem;
         --mobile-table-cell-padding-x: 0.55rem;
         --mobile-table-cell-font-size: 0.79rem;
-        --mobile-drawer-body-padding: 0.55rem;
-        --mobile-drawer-button-min-height: 2.85rem;
-        --mobile-drawer-button-font-size: 0.8rem;
-        --mobile-drawer-number-input-width: 3rem;
-        --mobile-drawer-number-input-height: 2.1rem;
-        --mobile-drawer-number-input-font-size: 0.78rem;
-        --mobile-actions-menu-width: min(22rem, 92vw);
         --mobile-overview-hero-gap: 0.75rem;
         --mobile-overview-eyebrow-font-size: 0.68rem;
         --mobile-overview-title-font-size: 1.05rem;
@@ -41,21 +34,6 @@
         --mobile-compare-cell-padding-x: 0.65rem;
         --mobile-compare-cell-font-size: 0.76rem;
         --mobile-compare-pagination-gap: 0.5rem;
-        --mobile-drawer-header-padding-y: 0.85rem;
-        --mobile-drawer-header-padding-x: 0.8rem;
-        --mobile-drawer-header-title-font-size: 0.82rem;
-        --mobile-drawer-header-close-size: 2.25rem;
-        --mobile-drawer-section-gap: 0.6rem;
-        --mobile-drawer-section-title-font-size: 0.78rem;
-        --mobile-drawer-primary-actions-gap: 0.5rem;
-        --mobile-drawer-mode-card-gap: 0.4rem;
-        --mobile-drawer-mode-label-font-size: 0.66rem;
-        --mobile-drawer-segmented-item-min-height: 2.4rem;
-        --mobile-drawer-segmented-item-font-size: 0.76rem;
-        --mobile-drawer-setting-row-padding-y: 0.7rem;
-        --mobile-drawer-setting-row-padding-x: 0.75rem;
-        --mobile-drawer-setting-title-font-size: 0.76rem;
-        --mobile-drawer-setting-desc-font-size: 0.65rem;
     }
 
     .app-shell {
@@ -185,42 +163,6 @@
         z-index: 40;
     }
 
-    #actions-drawer-backdrop {
-        opacity: 0;
-        transition: opacity 0.28s ease;
-    }
-
-    #actions-drawer-backdrop.is-open {
-        opacity: 1;
-    }
-
-    #actions-menu {
-        display: block;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        height: 100dvh;
-        width: var(--mobile-actions-menu-width);
-        max-width: 22rem;
-        transform: translate3d(100%, 0, 0) !important;
-        opacity: 1 !important;
-        transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1) !important;
-        animation: none !important;
-        transform-origin: right center;
-    }
-
-    #actions-menu:not(.hidden) {
-        animation: none !important;
-    }
-
-    #actions-menu.is-open {
-        transform: translate3d(0, 0, 0) !important;
-    }
-
-    #actions-menu.hidden {
-        display: none;
-    }
-
     body.app-body .top-toolbar .search-row {
         display: grid !important;
         grid-template-columns: minmax(0, 1fr) auto !important;
@@ -295,23 +237,6 @@
         font-size: var(--mobile-table-cell-font-size);
     }
 
-    .drawer-body {
-        padding: var(--mobile-drawer-body-padding);
-    }
-
-    .drawer-primary-button,
-    .drawer-secondary-button,
-    .drawer-text-action {
-        min-height: var(--mobile-drawer-button-min-height);
-        font-size: var(--mobile-drawer-button-font-size);
-    }
-
-    .drawer-number-input {
-        width: var(--mobile-drawer-number-input-width);
-        min-height: var(--mobile-drawer-number-input-height);
-        font-size: var(--mobile-drawer-number-input-font-size);
-    }
-
     .mobile-overview__hero {
         display: flex;
         align-items: flex-start;
@@ -358,90 +283,6 @@
         line-height: 1.2;
     }
 
-    #compare-dialog > .compare-panel > header {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        padding: var(--mobile-compare-header-padding-y) var(--mobile-compare-header-padding-x);
-    }
-
-    #compare-dialog-content {
-        gap: var(--mobile-compare-content-gap);
-    }
-
-    #compare-dialog-content th,
-    #compare-dialog-content td {
-        padding: var(--mobile-compare-cell-padding-y) var(--mobile-compare-cell-padding-x);
-        font-size: var(--mobile-compare-cell-font-size);
-    }
-
-    .compare-pagination {
-        display: grid;
-        grid-template-columns: auto auto auto;
-        align-items: center;
-        justify-content: center;
-        gap: var(--mobile-compare-pagination-gap);
-        width: 100%;
-        margin-inline: auto;
-    }
-
-    .compare-pagination #prev-page-compare {
-        justify-self: end;
-    }
-
-    .compare-pagination #next-page-compare {
-        justify-self: start;
-    }
-
-    .drawer-header {
-        padding: var(--mobile-drawer-header-padding-y) var(--mobile-drawer-header-padding-x);
-    }
-
-    .drawer-header__title {
-        font-size: var(--mobile-drawer-header-title-font-size);
-    }
-
-    .drawer-header__close {
-        width: var(--mobile-drawer-header-close-size);
-        height: var(--mobile-drawer-header-close-size);
-    }
-
-    .drawer-section {
-        gap: var(--mobile-drawer-section-gap);
-    }
-
-    .drawer-section__title {
-        font-size: var(--mobile-drawer-section-title-font-size);
-    }
-
-    .drawer-primary-actions {
-        gap: var(--mobile-drawer-primary-actions-gap);
-    }
-
-    .drawer-mode-card {
-        gap: var(--mobile-drawer-mode-card-gap);
-    }
-
-    .drawer-mode-card__label {
-        font-size: var(--mobile-drawer-mode-label-font-size);
-    }
-
-    .drawer-segmented-control__item {
-        min-height: var(--mobile-drawer-segmented-item-min-height);
-        font-size: var(--mobile-drawer-segmented-item-font-size);
-    }
-
-    .drawer-setting-row {
-        padding: var(--mobile-drawer-setting-row-padding-y) var(--mobile-drawer-setting-row-padding-x);
-    }
-
-    .drawer-setting-row__title {
-        font-size: var(--mobile-drawer-setting-title-font-size);
-    }
-
-    .drawer-setting-row__desc {
-        font-size: var(--mobile-drawer-setting-desc-font-size);
-    }
 }
 
 @media (max-width: 768px) {
@@ -464,12 +305,6 @@
         --mobile-table-cell-padding-y: 0.72rem;
         --mobile-table-cell-padding-x: 0.55rem;
         --mobile-table-cell-font-size: 0.79rem;
-        --mobile-drawer-body-padding: 0.55rem;
-        --mobile-drawer-button-min-height: 2.85rem;
-        --mobile-drawer-button-font-size: 0.8rem;
-        --mobile-drawer-number-input-width: 3rem;
-        --mobile-drawer-number-input-height: 2.1rem;
-        --mobile-drawer-number-input-font-size: 0.78rem;
     }
 
     #toast-container {
@@ -511,8 +346,7 @@
         line-height: 1.1;
     }
 
-    body.app-body .top-toolbar #menu-toggle,
-    body.app-body .top-toolbar #actions-menu-toggle {
+    body.app-body .top-toolbar #menu-toggle {
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -522,15 +356,9 @@
         line-height: 0 !important;
     }
 
-    body.app-body .top-toolbar #menu-toggle svg,
-    body.app-body .top-toolbar #actions-menu-toggle svg {
+    body.app-body .top-toolbar #menu-toggle svg {
         display: block;
         margin: 0;
-    }
-
-    .drawer-mode-card,
-    .drawer-settings-card {
-        border-color: rgba(148, 163, 184, 0.14);
     }
 
 }
@@ -552,29 +380,7 @@
         --mobile-table-cell-padding-y: 0.66rem;
         --mobile-table-cell-padding-x: 0.48rem;
         --mobile-table-cell-font-size: 0.76rem;
-        --mobile-drawer-body-padding: 0.85rem;
-        --mobile-drawer-button-min-height: 2.7rem;
-        --mobile-drawer-button-font-size: 0.68rem;
-        --mobile-actions-menu-width: 94vw;
         --mobile-overview-padding-inline: 0.7rem;
-    }
-
-    .drawer-primary-actions {
-        grid-template-columns: 1fr;
-    }
-
-    .drawer-secondary-button {
-        justify-content: flex-start;
-    }
-
-    .drawer-setting-row {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .drawer-setting-row__control {
-        width: 100%;
-        justify-content: space-between;
     }
 }
 
