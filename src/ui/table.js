@@ -10,6 +10,9 @@ export const createTableController = ({
     addToCompare,
     removeFromCompare
 }) => {
+    let lastRenderedDisplayMode = null;
+    let renderTransitionTimeout = null;
+
     const updateStickyOffsets = () => {
         const freezeColCount = getState().config.freezeCol || 0;
         const headerCells = Array.from(elements.thead.querySelectorAll('th'));
@@ -78,7 +81,7 @@ export const createTableController = ({
         });
     };
 
-    const renderTable = () => {
+    const buildTable = ({ animateValues = false } = {}) => {
         const { processedData, pagination, config, compareItems } = getState();
         const { currentPage, pageSize } = pagination;
         const { freezeRow, freezeCol, searchQuery, displayMode } = config;
@@ -132,11 +135,14 @@ export const createTableController = ({
             headerRow.forEach((key, idx) => {
                 const td = document.createElement('td');
                 td.className = `px-4 py-2 border-b border-border whitespace-nowrap truncate max-w-[300px] ${idx < freezeCol ? 'sticky-col' : ''}`;
-                td.innerHTML = formatValueForDisplay(row[key], {
+                const renderedValue = formatValueForDisplay(row[key], {
                     displayMode,
                     searchTerm: searchQuery,
                     highlight: true
                 });
+                td.innerHTML = animateValues
+                    ? `<span class="display-mode-text display-mode-text--in">${renderedValue}</span>`
+                    : `<span class="display-mode-text">${renderedValue}</span>`;
                 rowTr.appendChild(td);
             });
 
@@ -144,6 +150,32 @@ export const createTableController = ({
         });
 
         updateStickyOffsets();
+        lastRenderedDisplayMode = displayMode;
+    };
+
+    const renderTable = () => {
+        const { config } = getState();
+        const shouldAnimateDisplayModeChange =
+            lastRenderedDisplayMode !== null &&
+            lastRenderedDisplayMode !== config.displayMode;
+
+        if (!shouldAnimateDisplayModeChange) {
+            buildTable();
+            return;
+        }
+
+        if (renderTransitionTimeout) {
+            clearTimeout(renderTransitionTimeout);
+        }
+
+        elements.tbody
+            .querySelectorAll('.display-mode-text')
+            .forEach((node) => node.classList.add('display-mode-text--out'));
+
+        renderTransitionTimeout = window.setTimeout(() => {
+            buildTable({ animateValues: true });
+            renderTransitionTimeout = null;
+        }, 120);
     };
 
     const updatePaginationControls = () => {

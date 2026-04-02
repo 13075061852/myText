@@ -1,6 +1,7 @@
 ﻿import { getState, subscribe, setState, addToCompare, removeFromCompare, clearCompareItems } from '../core/state_manager.js';
 import { processActiveSheet } from '../services/excel_service.js';
 import { getCompareItemKey } from '../shared/data_utils.js';
+import { swapTextWithSlide } from '../shared/animation_utils.js';
 import { createTableController } from './table.js';
 import { createCompareDialogController } from './compare-dialog.js';
 import { createSidebarController } from './sidebar.js';
@@ -363,7 +364,10 @@ const updateModeButtons = () => {
     const mobileToggleModeBtn = elements.mobileToggleModeBtn;
     if (mobileToggleModeBtn) {
         const isAverage = displayMode === 'average';
-        mobileToggleModeBtn.querySelector('span').textContent = isAverage ? UI_TEXT.displayMode.average : UI_TEXT.displayMode.all;
+        swapTextWithSlide(
+            mobileToggleModeBtn.querySelector('span'),
+            isAverage ? UI_TEXT.displayMode.average : UI_TEXT.displayMode.all
+        );
         const icon = mobileToggleModeBtn.querySelector('i');
         if (icon) {
             icon.setAttribute('data-lucide', isAverage ? 'toggle-right' : 'toggle-left');

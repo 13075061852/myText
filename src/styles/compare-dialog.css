@@ -27,7 +27,7 @@
     background: var(--panel-bg);
     backdrop-filter: blur(20px);
     overflow: hidden;
-    max-width: min(95vw, 72rem);
+    max-width: calc(100vw - 2rem);
     max-height: 85vh;
     display: flex;
     flex-direction: column;

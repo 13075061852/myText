@@ -179,6 +179,43 @@ footer {
     }
 }
 
+@keyframes displayModeTextSlideIn {
+    from {
+        transform: translateY(0.5em);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes displayModeTextSlideOut {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateY(-0.5em);
+        opacity: 0;
+    }
+}
+
+.display-mode-text {
+    display: inline-block;
+    width: 100%;
+}
+
+.display-mode-text--in {
+    animation: displayModeTextSlideIn 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.display-mode-text--out {
+    animation: displayModeTextSlideOut 120ms ease-out forwards;
+}
+
 .toast {
     animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }

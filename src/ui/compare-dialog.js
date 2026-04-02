@@ -4,12 +4,14 @@ import {
     collectColumnKeys,
     formatValueForDisplay
 } from '../shared/data_utils.js';
+import { swapTextWithSlide } from '../shared/animation_utils.js';
 
 export const createCompareDialogController = ({
     getState,
     showToast
 }) => {
     const MOBILE_COMPARE_BREAKPOINT = 768;
+    let compareRenderTransitionTimeout = null;
     const compareDialogState = {
         currentPage: 1,
         displayMode: 'average',
@@ -19,7 +21,10 @@ export const createCompareDialogController = ({
     const syncCompareModeButton = () => {
         const compareModeTextSpan = document.getElementById('compare-mode-text');
         if (compareModeTextSpan) {
-            compareModeTextSpan.textContent = compareDialogState.displayMode === 'average' ? '平均值' : '参数';
+            swapTextWithSlide(
+                compareModeTextSpan,
+                compareDialogState.displayMode === 'average' ? '平均值' : '参数'
+            );
         }
     };
 
@@ -54,7 +59,7 @@ export const createCompareDialogController = ({
         }
     };
 
-    const renderCompareDialogContent = () => {
+    const buildCompareDialogContent = ({ animateValues = false } = {}) => {
         const content = document.getElementById('compare-dialog-content');
         const { compareItems } = getState();
 
@@ -96,9 +101,10 @@ export const createCompareDialogController = ({
                     resultHTML += `<tr><td class="font-medium sticky-first-col">${renderCompareItemLabel(item)}</td>`;
 
                     currentKeys.forEach((key) => {
-                        resultHTML += `<td>${formatValueForDisplay(item[key], {
+                        const renderedValue = formatValueForDisplay(item[key], {
                             displayMode: compareDialogState.displayMode
-                        })}</td>`;
+                        });
+                        resultHTML += `<td><span class="display-mode-text${animateValues ? ' display-mode-text--in' : ''}">${renderedValue}</span></td>`;
                     });
 
                     resultHTML += '</tr>';
@@ -116,9 +122,10 @@ export const createCompareDialogController = ({
                     resultHTML += `<tr><td class="font-medium sticky-first-col">${key}</td>`;
 
                     compareItems.forEach((item) => {
-                        resultHTML += `<td>${formatValueForDisplay(item[key], {
+                        const renderedValue = formatValueForDisplay(item[key], {
                             displayMode: compareDialogState.displayMode
-                        })}</td>`;
+                        });
+                        resultHTML += `<td><span class="display-mode-text${animateValues ? ' display-mode-text--in' : ''}">${renderedValue}</span></td>`;
                     });
 
                     resultHTML += '</tr>';
@@ -142,6 +149,28 @@ export const createCompareDialogController = ({
         content.innerHTML = resultHTML;
         bindCompareDialogPagination();
         lucide.createIcons();
+    };
+
+    const renderCompareDialogContent = ({ animateDisplayModeChange = false } = {}) => {
+        const content = document.getElementById('compare-dialog-content');
+
+        if (!animateDisplayModeChange || !content) {
+            buildCompareDialogContent();
+            return;
+        }
+
+        if (compareRenderTransitionTimeout) {
+            clearTimeout(compareRenderTransitionTimeout);
+        }
+
+        content
+            .querySelectorAll('.display-mode-text')
+            .forEach((node) => node.classList.add('display-mode-text--out'));
+
+        compareRenderTransitionTimeout = window.setTimeout(() => {
+            buildCompareDialogContent({ animateValues: true });
+            compareRenderTransitionTimeout = null;
+        }, 120);
     };
 
     const showCompareDialog = () => {
@@ -185,7 +214,7 @@ export const createCompareDialogController = ({
             compareModeToggleBtn.onclick = () => {
                 compareDialogState.displayMode = compareDialogState.displayMode === 'average' ? 'all' : 'average';
                 syncCompareModeButton();
-                renderCompareDialogContent();
+                renderCompareDialogContent({ animateDisplayModeChange: true });
             };
         }
 
