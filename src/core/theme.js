@@ -1,5 +1,6 @@
 export const initTheme = () => {
     const toggleBtn = document.getElementById('theme-toggle');
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]:not([media])');
     
     const storedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -9,6 +10,10 @@ export const initTheme = () => {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
+        }
+
+        if (themeColorMeta) {
+            themeColorMeta.setAttribute('content', isDark ? '#020617' : '#ffffff');
         }
     };
 

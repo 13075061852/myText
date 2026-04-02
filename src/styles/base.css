@@ -111,6 +111,7 @@ footer {
 .top-toolbar .display-mode-group,
 .drawer-segmented-control,
 .drawer-number-input,
+#compare-transpose-toggle,
 #compare-mode-toggle {
     border-radius: var(--radius-sm) !important;
 }

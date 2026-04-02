@@ -8,6 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#ffffff">
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#020617" media="(prefers-color-scheme: dark)">
     <title>广俊数据分析</title>
@@ -274,10 +275,16 @@
         <div class="compare-panel bg-background rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
             <header class="compare-dialog-header p-4 border-b border-border flex items-center justify-between">
                 <h2 class="text-lg font-semibold">数据对比</h2>
-                <button id="compare-mode-toggle"
-                    class="px-3 py-1 rounded-md border border-input text-xs transition-colors">
-                    <span id="compare-mode-text">平均值</span>
-                </button>
+                <div class="compare-dialog-actions">
+                    <button id="compare-transpose-toggle"
+                        class="compare-dialog-toggle px-3 py-1 rounded-md border border-input text-xs transition-colors">
+                        <span id="compare-transpose-text">翻转</span>
+                    </button>
+                    <button id="compare-mode-toggle"
+                        class="compare-dialog-toggle px-3 py-1 rounded-md border border-input text-xs transition-colors">
+                        <span id="compare-mode-text">平均值</span>
+                    </button>
+                </div>
             </header>
             <main id="compare-dialog-content" class="p-6 overflow-y-auto"></main>
         </div>

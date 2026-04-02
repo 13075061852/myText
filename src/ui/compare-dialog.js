@@ -9,9 +9,11 @@ export const createCompareDialogController = ({
     getState,
     showToast
 }) => {
+    const MOBILE_COMPARE_BREAKPOINT = 768;
     const compareDialogState = {
         currentPage: 1,
-        displayMode: 'average'
+        displayMode: 'average',
+        isTransposed: true
     };
 
     const syncCompareModeButton = () => {
@@ -20,6 +22,16 @@ export const createCompareDialogController = ({
             compareModeTextSpan.textContent = compareDialogState.displayMode === 'average' ? '平均值' : '参数';
         }
     };
+
+    const syncCompareTransposeButton = () => {
+        const compareTransposeTextSpan = document.getElementById('compare-transpose-text');
+        if (compareTransposeTextSpan) {
+            compareTransposeTextSpan.textContent = '翻转';
+        }
+    };
+
+    const renderCompareItemLabel = (item) =>
+        `<span class="compare-column-title">${item[MODEL_KEY] || '未知'}</span><br/><span class="compare-column-meta text-muted-foreground">${item[BATCH_KEY] || '未知'}</span>`;
 
     const bindCompareDialogPagination = () => {
         const prevBtn = document.getElementById('prev-page-compare');
@@ -60,7 +72,7 @@ export const createCompareDialogController = ({
                     key !== BATCH_KEY &&
                     !String(key).startsWith('__EMPTY')
                 );
-            const totalPages = Math.ceil(filteredKeys.length / rowsPerPage);
+            const totalPages = Math.max(1, Math.ceil(filteredKeys.length / rowsPerPage));
             const currentPage = Math.min(Math.max(compareDialogState.currentPage, 1), totalPages);
 
             compareDialogState.currentPage = currentPage;
@@ -71,40 +83,60 @@ export const createCompareDialogController = ({
 
             resultHTML += '<div class="compare-table-container">';
             resultHTML += '<table>';
-            resultHTML += '<thead><tr><th class="sticky-first-col">参数</th>';
+            if (compareDialogState.isTransposed) {
+                resultHTML += '<thead><tr><th class="sticky-first-col">型号 / 批次</th>';
 
-            compareItems.forEach((item) => {
-                resultHTML += `<th>${item[MODEL_KEY] || '未知'}<br/><span class="text-xs text-muted-foreground">${item[BATCH_KEY] || '未知'}</span></th>`;
-            });
-
-            resultHTML += '</tr></thead><tbody>';
-
-            currentKeys.forEach((key) => {
-                resultHTML += `<tr><td class="font-medium sticky-first-col">${key}</td>`;
-
-                compareItems.forEach((item) => {
-                    resultHTML += `<td>${formatValueForDisplay(item[key], {
-                        displayMode: compareDialogState.displayMode
-                    })}</td>`;
+                currentKeys.forEach((key) => {
+                    resultHTML += `<th>${key}</th>`;
                 });
 
-                resultHTML += '</tr>';
-            });
+                resultHTML += '</tr></thead><tbody>';
+
+                compareItems.forEach((item) => {
+                    resultHTML += `<tr><td class="font-medium sticky-first-col">${renderCompareItemLabel(item)}</td>`;
+
+                    currentKeys.forEach((key) => {
+                        resultHTML += `<td>${formatValueForDisplay(item[key], {
+                            displayMode: compareDialogState.displayMode
+                        })}</td>`;
+                    });
+
+                    resultHTML += '</tr>';
+                });
+            } else {
+                resultHTML += '<thead><tr><th class="sticky-first-col">参数</th>';
+
+                compareItems.forEach((item) => {
+                    resultHTML += `<th>${renderCompareItemLabel(item)}</th>`;
+                });
+
+                resultHTML += '</tr></thead><tbody>';
+
+                currentKeys.forEach((key) => {
+                    resultHTML += `<tr><td class="font-medium sticky-first-col">${key}</td>`;
+
+                    compareItems.forEach((item) => {
+                        resultHTML += `<td>${formatValueForDisplay(item[key], {
+                            displayMode: compareDialogState.displayMode
+                        })}</td>`;
+                    });
+
+                    resultHTML += '</tr>';
+                });
+            }
 
             resultHTML += '</tbody></table>';
             resultHTML += '</div>';
 
-            if (totalPages > 1) {
-                resultHTML += '<div class="compare-pagination pagination-controls flex items-center justify-center gap-4 mt-4">';
-                resultHTML += `<button id="prev-page-compare" class="p-2 rounded-md hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors ${currentPage <= 1 ? 'opacity-30 cursor-not-allowed' : ''}" ${currentPage <= 1 ? 'disabled' : ''}>
+            resultHTML += '<div class="compare-pagination pagination-controls">';
+            resultHTML += `<button id="prev-page-compare" class="p-2 rounded-md hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors ${currentPage <= 1 ? 'opacity-30 cursor-not-allowed' : ''}" ${currentPage <= 1 ? 'disabled' : ''}>
                 <i data-lucide="chevron-left" class="w-4 h-4"></i>
             </button>`;
-                resultHTML += `<span class="compare-pagination-info text-sm font-medium min-w-[3rem] text-center">${currentPage} / ${totalPages}</span>`;
-                resultHTML += `<button id="next-page-compare" class="p-2 rounded-md hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors ${currentPage >= totalPages ? 'opacity-30 cursor-not-allowed' : ''}" ${currentPage >= totalPages ? 'disabled' : ''}>
+            resultHTML += `<span class="compare-pagination-info text-sm font-medium min-w-[3rem] text-center">${currentPage} / ${totalPages}</span>`;
+            resultHTML += `<button id="next-page-compare" class="p-2 rounded-md hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-colors ${currentPage >= totalPages ? 'opacity-30 cursor-not-allowed' : ''}" ${currentPage >= totalPages ? 'disabled' : ''}>
                 <i data-lucide="chevron-right" class="w-4 h-4"></i>
             </button>`;
-                resultHTML += '</div>';
-            }
+            resultHTML += '</div>';
         }
 
         content.innerHTML = resultHTML;
@@ -120,11 +152,19 @@ export const createCompareDialogController = ({
             return;
         }
 
+        if (compareItems.length < 2) {
+            showToast('请至少选择两个数据项进行对比');
+            return;
+        }
+
         const dialog = document.getElementById('compare-dialog');
         const compareModeToggleBtn = document.getElementById('compare-mode-toggle');
+        const compareTransposeToggleBtn = document.getElementById('compare-transpose-toggle');
 
         compareDialogState.currentPage = 1;
+        compareDialogState.isTransposed = window.innerWidth > MOBILE_COMPARE_BREAKPOINT;
         syncCompareModeButton();
+        syncCompareTransposeButton();
         renderCompareDialogContent();
 
         dialog.classList.remove('hidden');
@@ -145,6 +185,14 @@ export const createCompareDialogController = ({
             compareModeToggleBtn.onclick = () => {
                 compareDialogState.displayMode = compareDialogState.displayMode === 'average' ? 'all' : 'average';
                 syncCompareModeButton();
+                renderCompareDialogContent();
+            };
+        }
+
+        if (compareTransposeToggleBtn) {
+            compareTransposeToggleBtn.onclick = () => {
+                compareDialogState.isTransposed = !compareDialogState.isTransposed;
+                syncCompareTransposeButton();
                 renderCompareDialogContent();
             };
         }
