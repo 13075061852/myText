@@ -2,6 +2,7 @@
 import { processActiveSheet } from '../services/excel_service.js';
 import { getCompareItemKey } from '../shared/data_utils.js';
 import { swapTextWithSlide } from '../shared/animation_utils.js';
+import { refreshIcons } from '../shared/vendor_loader.js';
 import { createTableController } from './table.js';
 import { createCompareDialogController } from './compare-dialog.js';
 import { createSidebarController } from './sidebar.js';
@@ -113,7 +114,7 @@ export const initUI = () => {
             sidebarBackdrop.classList.add('hidden');
         }
     };
-    lucide.createIcons();
+    refreshIcons();
     
     const searchModeBtn = document.getElementById('search-mode-btn');
     if (searchModeBtn) {
@@ -255,7 +256,7 @@ export const initUI = () => {
     updateModeButtons();
     updateSearchModeButton();
     updateMobileSelectionSummary();
-    lucide.createIcons();
+    refreshIcons();
 };
 
 const toggleSearchMode = () => {
@@ -285,7 +286,7 @@ const updateSearchModeButton = () => {
         searchModeBtn.innerHTML = `<i data-lucide="search" class="w-4 h-4 mr-1"></i>${UI_TEXT.search.fuzzy}`;
     }
     
-    lucide.createIcons();
+    refreshIcons();
 };
 
 const updateMobileSelectionSummary = () => {
@@ -341,7 +342,7 @@ const updateModeButtons = () => {
         mobileToggleModeBtn.classList.toggle('mobile-selection-btn--primary', !isAverage);
     }
 
-    lucide.createIcons();
+    refreshIcons();
 };
 
 const renderReset = () => {

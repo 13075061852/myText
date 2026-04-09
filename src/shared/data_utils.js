@@ -3,6 +3,8 @@ export const BATCH_KEY = '\u6279\u6B21';
 
 export const DEFAULT_TEST_FILE_NAME = '\u6D4B\u8BD5\u6570\u636E.xlsx';
 export const DEFAULT_TEST_FILE_PATH = `./${DEFAULT_TEST_FILE_NAME}`;
+export const DEFAULT_TEST_JSON_NAME = '\u6D4B\u8BD5\u6570\u636E.json';
+export const DEFAULT_TEST_JSON_PATH = `./${DEFAULT_TEST_JSON_NAME}`;
 
 export const isSpecialMarkedValue = (value) =>
     typeof value === 'string' && (value.startsWith('>') || value.startsWith('<'));

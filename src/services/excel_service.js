@@ -2,6 +2,7 @@ import { getState, setState } from '../core/state_manager.js';
 import {
     DEFAULT_TEST_FILE_NAME,
     DEFAULT_TEST_FILE_PATH,
+    DEFAULT_TEST_JSON_PATH,
     MODEL_KEY,
     BATCH_KEY,
     calculateNumericAverage,
@@ -11,6 +12,70 @@ import {
     matchesModelQuery,
     parseNumericValue
 } from '../shared/data_utils.js';
+import { ensureXlsx } from '../shared/vendor_loader.js';
+
+const applyProjectSnapshot = ({
+    file,
+    sheetNames,
+    activeSheetName,
+    data,
+    originalMergedData,
+    compareItems = [],
+    config = {}
+}) => {
+    const resolvedSheetNames = Array.isArray(sheetNames) ? sheetNames : [];
+    const resolvedData = data && typeof data === 'object' ? data : {};
+    const resolvedMergedData = originalMergedData && typeof originalMergedData === 'object'
+        ? originalMergedData
+        : {};
+    const nextActiveSheetName = activeSheetName || resolvedSheetNames[0] || null;
+
+    setState({
+        file,
+        sheetNames: resolvedSheetNames,
+        data: resolvedData,
+        originalMergedData: resolvedMergedData,
+        activeSheetName: nextActiveSheetName,
+        compareItems,
+        config
+    });
+
+    processActiveSheet();
+};
+
+const fetchJsonSnapshot = async () => {
+    const response = await fetch(DEFAULT_TEST_JSON_PATH, { cache: 'no-store' });
+
+    if (!response.ok) {
+        throw new Error(`JSON snapshot unavailable: ${response.status}`);
+    }
+
+    return response.json();
+};
+
+export const loadDefaultProjectData = async () => {
+    try {
+        const snapshot = await fetchJsonSnapshot();
+        const projectMeta = snapshot?.project ?? {};
+        const currentView = snapshot?.currentView ?? {};
+
+        applyProjectSnapshot({
+            file: projectMeta.file ?? {
+                name: DEFAULT_TEST_JSON_PATH.split('/').pop(),
+                size: 0
+            },
+            sheetNames: projectMeta.sheetNames ?? Object.keys(snapshot?.sheets?.raw ?? {}),
+            activeSheetName: projectMeta.activeSheetName,
+            data: snapshot?.sheets?.raw ?? {},
+            originalMergedData: snapshot?.sheets?.merged ?? {},
+            compareItems: currentView.compareItems ?? [],
+            config: currentView.config ?? {}
+        });
+    } catch (error) {
+        console.warn('Default JSON snapshot not available, falling back to Excel.', error);
+        await loadDefaultTestFile();
+    }
+};
 
 /**
  * 计算数组的平均值
@@ -71,8 +136,9 @@ export const mergeFieldValue = (targetObj, key, value, isIdentifier) => {
 /**
  * 加载默认测试文件
  */
-export const loadDefaultTestFile = () => {
+export const loadDefaultTestFile = async () => {
     try {
+        const XLSX = await ensureXlsx();
         // 创建XMLHttpRequest对象来加载本地测试文件
         const xhr = new XMLHttpRequest();
         // 使用相对路径加载测试文件
@@ -158,6 +224,7 @@ export const loadDefaultTestFile = () => {
 export const handleFileUpload = async (file) => {
     if (!file) return;
 
+    const XLSX = await ensureXlsx();
     const reader = new FileReader();
 
     reader.onload = (e) => {

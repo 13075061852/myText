@@ -5,6 +5,7 @@ import {
     formatValueForDisplay
 } from '../shared/data_utils.js';
 import { swapTextWithSlide } from '../shared/animation_utils.js';
+import { refreshIcons } from '../shared/vendor_loader.js';
 
 export const createCompareDialogController = ({
     getState,
@@ -148,7 +149,7 @@ export const createCompareDialogController = ({
 
         content.innerHTML = resultHTML;
         bindCompareDialogPagination();
-        lucide.createIcons();
+        refreshIcons();
     };
 
     const renderCompareDialogContent = ({ animateDisplayModeChange = false } = {}) => {
@@ -226,7 +227,7 @@ export const createCompareDialogController = ({
             };
         }
 
-        lucide.createIcons();
+        refreshIcons();
     };
 
     return {

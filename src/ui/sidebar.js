@@ -5,6 +5,7 @@ import {
     isSameCompareItem,
     matchesModelQuery
 } from '../shared/data_utils.js';
+import { refreshIcons } from '../shared/vendor_loader.js';
 
 export const createSidebarController = ({
     elements,
@@ -60,7 +61,7 @@ export const createSidebarController = ({
         });
 
         onOverviewChange();
-        lucide.createIcons();
+        refreshIcons();
     };
 
     const renderCompareItems = () => {
@@ -114,7 +115,7 @@ export const createSidebarController = ({
             });
         });
 
-        lucide.createIcons();
+        refreshIcons();
     };
 
     return {
