@@ -133,6 +133,36 @@ export const mergeFieldValue = (targetObj, key, value, isIdentifier) => {
     }
 };
 
+const getRowModelValue = (row) => {
+    const modelValue = row?.[MODEL_KEY];
+
+    if (modelValue === null || modelValue === undefined) {
+        return '';
+    }
+
+    return String(modelValue).trim();
+};
+
+const mergeRowIntoTarget = (targetObj, row) => {
+    if (!row || typeof row !== 'object') {
+        return;
+    }
+
+    for (const key in row) {
+        if (row[key] !== null && row[key] !== undefined && row[key] !== '') {
+            if (key === MODEL_KEY || key === BATCH_KEY || key === '测试温度') {
+                if (targetObj[key] === undefined) {
+                    targetObj[key] = row[key];
+                }
+                continue;
+            }
+
+            const isIdentifier = isIdentifierKey(key);
+            mergeFieldValue(targetObj, key, row[key], isIdentifier);
+        }
+    }
+};
+
 /**
  * 加载默认测试文件
  */
@@ -269,75 +299,45 @@ export const processAllSheets = () => {
     
     if (!data) return;
 
-    // 处理所有工作表的数据合并
-    let allMergedData = {};
-    
-    // 遍历所有工作表
-    Object.keys(data).forEach(sheetName => {
-        const rawData = data[sheetName];
-        allMergedData[sheetName] = [];
-        
-        // 遍历工作表中的每一行数据
-        for (let index = 0; index < rawData.length; index++) {
-            const row = rawData[index];
-            if (row[MODEL_KEY]) {
-                // 创建一个新的合并对象，包含当前行和往后两条数据的所有参数
-                const mergedRow = {};
-                
-                // 合并当前行数据（过滤空值）
-                for (const key in row) {
-                    if (row[key] !== null && row[key] !== undefined && row[key] !== '') {
-                        // 检查是否为型号或批次字段
-                        const isIdentifier = isIdentifierKey(key);
-                        mergeFieldValue(mergedRow, key, row[key], isIdentifier);
-                    }
-                }
-                
-                // 合并下一行数据（过滤空值）
-                if (index + 1 < rawData.length) {
-                    const nextRow = rawData[index + 1];
-                    for (const key in nextRow) {
-                        if (nextRow[key] !== null && nextRow[key] !== undefined && nextRow[key] !== '') {
-                            // 检查是否为型号或批次字段
-                            const isIdentifier = isIdentifierKey(key);
-                            mergeFieldValue(mergedRow, key, nextRow[key], isIdentifier);
-                        }
-                    }
-                }
-                
-                // 合并下两行数据（过滤空值）
-                if (index + 2 < rawData.length) {
-                    const nextNextRow = rawData[index + 2];
-                    for (const key in nextNextRow) {
-                        if (nextNextRow[key] !== null && nextNextRow[key] !== undefined && nextNextRow[key] !== '') {
-                            // 检查是否为型号或批次字段
-                            const isIdentifier = isIdentifierKey(key);
-                            mergeFieldValue(mergedRow, key, nextNextRow[key], isIdentifier);
-                        }
-                    }
-                }
-                
-                // 将合并后的对象添加到结果数组中
-                allMergedData[sheetName].push(mergedRow);
-                
-                // 跳过已处理的行
-                index += 2;
+    // Group rows by model across the entire sheet.
+    const allMergedData = {};
+
+    Object.keys(data).forEach((sheetName) => {
+        const rawData = Array.isArray(data[sheetName]) ? data[sheetName] : [];
+        const mergedByModel = new Map();
+        const modelOrder = [];
+        let currentModel = '';
+
+        rawData.forEach((row) => {
+            const rowModel = getRowModelValue(row);
+            if (rowModel) {
+                currentModel = rowModel;
             }
-        }
+
+            if (!currentModel) {
+                return;
+            }
+
+            if (!mergedByModel.has(currentModel)) {
+                mergedByModel.set(currentModel, {});
+                modelOrder.push(currentModel);
+            }
+
+            const mergedRow = mergedByModel.get(currentModel);
+            mergeRowIntoTarget(mergedRow, row);
+        });
+
+        allMergedData[sheetName] = modelOrder.map((modelKey) => mergedByModel.get(modelKey));
     });
 
-    // 更新状态，保存所有合并后的数据
+    // Persist the merged result and refresh the active sheet view.
     setState({
         originalMergedData: allMergedData
     });
     
-    // 处理当前活动工作表的显示数据
     processActiveSheet();
 };
 
-/**
- * 处理当前活动工作表的数据
- */
 export const processActiveSheet = () => {
     const { originalMergedData, activeSheetName, config } = getState();
     

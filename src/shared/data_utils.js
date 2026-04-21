@@ -41,11 +41,18 @@ export const calculateNumericAverage = (values) => {
 };
 
 export const isSameCompareItem = (leftItem, rightItem) =>
-    leftItem?.[MODEL_KEY] === rightItem?.[MODEL_KEY] &&
-    leftItem?.[BATCH_KEY] === rightItem?.[BATCH_KEY];
+    getCompareItemKey(leftItem) === getCompareItemKey(rightItem);
 
 export const getCompareItemKey = (item) =>
-    `${item?.[MODEL_KEY] ?? ''}::${item?.[BATCH_KEY] ?? ''}`;
+    `${normalizeCompareKeyValue(item?.[MODEL_KEY])}::${normalizeCompareKeyValue(item?.[BATCH_KEY])}`;
+
+const normalizeCompareKeyValue = (value) => {
+    if (Array.isArray(value)) {
+        return value.map((entry) => String(entry ?? '')).join('|');
+    }
+
+    return String(value ?? '');
+};
 
 export const matchesModelQuery = (row, searchTerm, isPrecise = false) => {
     if (!searchTerm) {

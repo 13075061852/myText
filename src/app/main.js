@@ -48,7 +48,7 @@ const buildProjectExportPayload = () => {
             exportedAt: new Date().toISOString()
         },
         sheets: {
-            raw: data,
+            raw: originalMergedData,
             merged: originalMergedData
         },
         currentView: {
